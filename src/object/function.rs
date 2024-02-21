@@ -6,7 +6,7 @@ pub struct Function {
     arity: usize,
     pub chunk: Rc<Chunk>,
     name: String,
-    upvalue_count: usize,
+    pub upvalue_count: usize,
 }
 
 impl Function {

@@ -37,12 +37,6 @@ impl Display for Value {
     }
 }
 
-impl Value {
-    pub fn print(&self) {
-        print!("{}", self);
-    }
-}
-
 pub struct Constants {
     pub values: Vec<Value>,
 }
@@ -50,6 +44,10 @@ pub struct Constants {
 impl Constants {
     pub fn new() -> Self {
         Constants { values: Vec::new() }
+    }
+
+    pub fn print_nth(&self, nth: usize) {
+        print!("{}", self.values.get(nth).unwrap());
     }
 
     pub fn write_value(&mut self, value: Value) -> usize {

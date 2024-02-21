@@ -15,14 +15,14 @@ impl Chunk {
         println!("== {} ==", name);
         let mut offset = 0;
         while offset < self.code.len() {
-            offset = todo!();
+            offset = self.disassemble_instruction(offset);
         }
     }
 
     fn constant_instruction(&self, name: &str, offset: usize) -> usize {
         let constant = self.code.get(offset + 1).unwrap().to_owned();
         print!("{:<16} {:>4} '", name, constant);
-        todo!();
+        self.constants.print_nth(constant as usize);
         println!("'");
         offset + 2
     }
@@ -31,7 +31,7 @@ impl Chunk {
         let constant = self.code.get(offset + 1).unwrap().to_owned();
         let arg_count = self.code.get(offset + 2).unwrap().to_owned();
         print!("{:<16} ({} args) {:>4} '", name, arg_count, constant);
-        todo!();
+        self.constants.print_nth(constant as usize);
         println!("'");
         offset + 3
     }
@@ -61,6 +61,7 @@ impl Chunk {
 
     fn disassemble_instruction(&self, offset: usize) -> usize {
         use crate::chunk::opcode::OpCode::*;
+        use crate::value::Value::Function;
         use JumpDirection::*;
 
         print!("{:04} ", offset);
@@ -106,14 +107,10 @@ impl Chunk {
                 let constant = self.code.get(offset).unwrap().to_owned();
                 i += 1;
                 print!("{:-16} {:4} ", Closure.to_string(), constant);
-                self.constants
-                    .values
-                    .get(constant as usize)
-                    .unwrap()
-                    .print();
+                self.constants.print_nth(constant as usize);
                 println!();
-                if let Value::Func(function) = self.constants.read_value(constant as usize) {
-                    for _ in 0..function.upvalues() {
+                if let Function(function) = self.constants.values.get(constant as usize).unwrap() {
+                    for _ in 0..function.upvalue_count {
                         let is_local: &str = if self.code[i] == 0 {
                             "upvalue"
                         } else {
@@ -140,6 +137,7 @@ impl Chunk {
             Inherit => self.simple_instruction(Inherit.to_string().as_str(), offset),
             GetSuper => self.constant_instruction(GetSuper.to_string().as_str(), offset),
             SuperInvoke => self.invoke_instruction(SuperInvoke.to_string().as_str(), offset),
+            _ => panic!("Unknown Opcode"),
         }
     }
 }
