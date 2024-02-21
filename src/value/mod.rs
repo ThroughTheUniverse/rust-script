@@ -1,9 +1,8 @@
-use std::{fmt::Display, rc::Rc};
-
 use crate::object::{
     bound_method::BoundMethod, closure::Closure, function::Function, instance::Instance,
     native_function::NativeFunction, r#struct::Struct,
 };
+use std::{any::Any, cmp::Ordering, fmt::Display, rc::Rc};
 
 #[derive(Clone)]
 pub enum Value {
@@ -33,6 +32,24 @@ impl Display for Value {
             Struct(r#struct) => write!(f, "{}", r#struct),
             Instance(instance) => write!(f, "{}", instance),
             BoundMethod(bound_method) => write!(f, "{}", bound_method),
+        }
+    }
+}
+
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        use Value::*;
+        match (self, other) {
+            (None, None) => true,
+            (String(a), String(b)) => a.cmp(b) == Ordering::Equal,
+            (Function(a), Function(b)) => Rc::ptr_eq(a, b),
+            (Struct(a), Struct(b)) => Rc::ptr_eq(a, b),
+            (NativeFunction(a), NativeFunction(b)) => a.type_id() == b.type_id(),
+            (Number(a), Number(b)) => a == b,
+            (Bool(a), Bool(b)) => a == b,
+            (Instance(a), Instance(b)) => Rc::ptr_eq(a, b),
+            (BoundMethod(a), BoundMethod(b)) => Rc::ptr_eq(a, b),
+            _ => false,
         }
     }
 }

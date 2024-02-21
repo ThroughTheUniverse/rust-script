@@ -2,6 +2,7 @@ pub mod debug;
 pub mod opcode;
 use crate::value::{Constants, Value};
 
+#[derive(PartialEq, Eq)]
 pub struct Chunk {
     code: Vec<u8>,
     positions: Vec<usize>,

@@ -11,7 +11,7 @@ enum JumpDirection {
 }
 
 impl Chunk {
-    fn disassemble_chunk(&self, name: &str) {
+    pub fn disassemble_chunk(&self, name: &str) {
         println!("== {} ==", name);
         let mut offset = 0;
         while offset < self.code.len() {
@@ -59,7 +59,7 @@ impl Chunk {
         offset + 3
     }
 
-    fn disassemble_instruction(&self, offset: usize) -> usize {
+    pub fn disassemble_instruction(&self, offset: usize) -> usize {
         use crate::chunk::opcode::OpCode::*;
         use crate::value::Value::Function;
         use JumpDirection::*;
