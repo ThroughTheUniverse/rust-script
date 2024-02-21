@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use super::{function::Function, upvalue::Upvalue};
 
@@ -13,5 +13,11 @@ impl Closure {
             function: Rc::clone(&function),
             upvalues: RefCell::new(Vec::new()),
         }
+    }
+}
+
+impl Display for Closure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.function)
     }
 }

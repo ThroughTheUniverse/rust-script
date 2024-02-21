@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{fmt::Display, rc::Rc};
 
 use crate::chunk::Chunk;
 
@@ -21,6 +21,16 @@ impl Function {
             chunk: Rc::clone(chunk),
             name: name.into(),
             upvalue_count,
+        }
+    }
+}
+
+impl Display for Function {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.name.is_empty() {
+            write!(f, "<script>")
+        } else {
+            write!(f, "<fn {}>", self.name)
         }
     }
 }

@@ -1,10 +1,11 @@
+pub mod debug;
 pub mod opcode;
 use crate::value::{Constants, Value};
 
 pub struct Chunk {
-    pub code: Vec<u8>,
-    pub positions: Vec<usize>,
-    pub constants: Constants,
+    code: Vec<u8>,
+    positions: Vec<usize>,
+    constants: Constants,
 }
 
 impl Chunk {
@@ -16,7 +17,7 @@ impl Chunk {
         }
     }
 
-    pub fn write_chunk(&mut self, byte: u8) {
+    pub fn write(&mut self, byte: u8) {
         self.code.push(byte);
     }
 

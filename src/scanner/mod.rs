@@ -1,5 +1,6 @@
 use crate::scanner::token::Token;
 use crate::scanner::token::TokenKind;
+use crate::scanner::token::TokenKind::*;
 
 pub mod token;
 
@@ -27,11 +28,11 @@ impl Scanner {
         self.start = self.current;
 
         if self.is_at_end() {
-            return self.make_token(TokenKind::EOF);
+            return self.make_token(EOF);
         }
 
         let c = self.advance();
-        if c.is_alphabetic() {
+        if c.is_alphabetic() || c == '_' {
             return self.identifier();
         }
         if c.is_digit(10) {
@@ -39,43 +40,43 @@ impl Scanner {
         }
 
         match c {
-            '(' => self.make_token(TokenKind::LeftParen),
-            ')' => self.make_token(TokenKind::RightParen),
-            '{' => self.make_token(TokenKind::LeftBrace),
-            '}' => self.make_token(TokenKind::RightBrace),
-            ';' => self.make_token(TokenKind::Semicolon),
-            ',' => self.make_token(TokenKind::Comma),
-            '.' => self.make_token(TokenKind::Dot),
-            '-' => self.make_token(TokenKind::Minus),
-            '+' => self.make_token(TokenKind::Plus),
-            '*' => self.make_token(TokenKind::Star),
-            '/' => self.make_token(TokenKind::Slash),
+            '(' => self.make_token(LeftParen),
+            ')' => self.make_token(RightParen),
+            '{' => self.make_token(LeftBrace),
+            '}' => self.make_token(RightBrace),
+            ';' => self.make_token(Semicolon),
+            ',' => self.make_token(Comma),
+            '.' => self.make_token(Dot),
+            '-' => self.make_token(Minus),
+            '+' => self.make_token(Plus),
+            '*' => self.make_token(Star),
+            '/' => self.make_token(Slash),
             '!' => {
                 if self.matches('=') {
-                    self.make_token(TokenKind::BangEqual)
+                    self.make_token(BangEqual)
                 } else {
-                    self.make_token(TokenKind::Bang)
+                    self.make_token(Bang)
                 }
             }
             '=' => {
                 if self.matches('=') {
-                    self.make_token(TokenKind::EqualEqual)
+                    self.make_token(EqualEqual)
                 } else {
-                    self.make_token(TokenKind::Equal)
+                    self.make_token(Equal)
                 }
             }
             '>' => {
                 if self.matches('=') {
-                    self.make_token(TokenKind::GreaterEqual)
+                    self.make_token(GreaterEqual)
                 } else {
-                    self.make_token(TokenKind::Greater)
+                    self.make_token(Greater)
                 }
             }
             '<' => {
                 if self.matches('=') {
-                    self.make_token(TokenKind::LessEqual)
+                    self.make_token(LessEqual)
                 } else {
-                    self.make_token(TokenKind::Less)
+                    self.make_token(Less)
                 }
             }
             '"' => self.string(),
@@ -131,7 +132,7 @@ impl Scanner {
     // Create an error token with the given message
     fn error_token(&self, message: &str) -> Token {
         Token {
-            kind: TokenKind::Error,
+            kind: Error,
             text: message.to_owned(),
             line: self.line,
         }
@@ -164,7 +165,7 @@ impl Scanner {
     }
 
     fn check_keyword(&self, start: usize, length: usize, rest: &str, kind: TokenKind) -> TokenKind {
-        let compare: String = self.source[self.start + start..self.current]
+        let compare: std::string::String = self.source[self.start + start..self.current]
             .iter()
             .collect();
 
@@ -172,51 +173,51 @@ impl Scanner {
             return kind;
         }
 
-        TokenKind::Identifier
+        Identifier
     }
 
     fn identifier_type(&self) -> TokenKind {
         match self.source.get(self.start).unwrap() {
-            'a' => self.check_keyword(1, 2, "nd", TokenKind::And),
-            'e' => self.check_keyword(1, 3, "lse", TokenKind::Else),
+            'a' => self.check_keyword(1, 2, "nd", And),
+            'e' => self.check_keyword(1, 3, "lse", Else),
             'f' => {
                 if self.current - self.start > 1 {
                     match self.source.get(self.start + 1).unwrap() {
-                        'a' => self.check_keyword(2, 3, "lse", TokenKind::False),
-                        'o' => self.check_keyword(2, 1, "r", TokenKind::For),
-                        'n' => self.check_keyword(2, 0, "", TokenKind::Fn),
-                        _ => TokenKind::Identifier,
+                        'a' => self.check_keyword(2, 3, "lse", False),
+                        'o' => self.check_keyword(2, 1, "r", For),
+                        'n' => self.check_keyword(2, 0, "", Fn),
+                        _ => Identifier,
                     }
                 } else {
-                    TokenKind::Identifier
+                    Identifier
                 }
             }
-            'i' => self.check_keyword(1, 1, "f", TokenKind::If),
-            'n' => self.check_keyword(1, 3, "one", TokenKind::None),
-            'o' => self.check_keyword(1, 1, "r", TokenKind::Or),
-            'p' => self.check_keyword(1, 4, "rint", TokenKind::Print),
-            'r' => self.check_keyword(1, 5, "eturn", TokenKind::Return),
+            'i' => self.check_keyword(1, 1, "f", If),
+            'n' => self.check_keyword(1, 3, "one", None),
+            'o' => self.check_keyword(1, 1, "r", Or),
+            'p' => self.check_keyword(1, 4, "rint", Print),
+            'r' => self.check_keyword(1, 5, "eturn", Return),
             's' => {
                 if self.current - self.start > 1 {
                     match self.source.get(self.start + 1).unwrap() {
-                        'e' => self.check_keyword(2, 2, "lf", TokenKind::Self_),
-                        't' => self.check_keyword(2, 4, "ruct", TokenKind::Struct),
-                        'u' => self.check_keyword(2, 4, "uper", TokenKind::Super),
-                        _ => TokenKind::Identifier,
+                        'e' => self.check_keyword(2, 2, "lf", Self_),
+                        't' => self.check_keyword(2, 4, "ruct", Struct),
+                        'u' => self.check_keyword(2, 4, "uper", Super),
+                        _ => Identifier,
                     }
                 } else {
-                    TokenKind::Identifier
+                    Identifier
                 }
             }
-            't' => self.check_keyword(1, 3, "rue", TokenKind::True),
-            'l' => self.check_keyword(1, 2, "et", TokenKind::Let),
-            'w' => self.check_keyword(1, 4, "hile", TokenKind::While),
-            _ => TokenKind::Identifier,
+            't' => self.check_keyword(1, 3, "rue", True),
+            'l' => self.check_keyword(1, 2, "et", Let),
+            'w' => self.check_keyword(1, 4, "hile", While),
+            _ => Identifier,
         }
     }
 
     fn identifier(&mut self) -> Token {
-        while self.peek().is_alphabetic() || self.peek().is_digit(10) {
+        while self.peek().is_alphabetic() || self.peek().is_digit(10) || self.peek() == '_' {
             self.advance();
         }
         self.make_token(self.identifier_type())
@@ -232,7 +233,7 @@ impl Scanner {
                 self.advance();
             }
         }
-        self.make_token(TokenKind::Number)
+        self.make_token(Number)
     }
 
     fn string(&mut self) -> Token {
@@ -246,7 +247,7 @@ impl Scanner {
             return self.error_token("Unterminated string");
         }
         self.advance();
-        self.make_token(TokenKind::String)
+        self.make_token(String)
     }
 
     // Scan and tokenize the source code

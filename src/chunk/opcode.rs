@@ -96,7 +96,7 @@ impl Display for OpCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Constant => write!(f, "Constant"),
-            Self::None => write!(f, "Nil"),
+            Self::None => write!(f, "None"),
             Self::True => write!(f, "True"),
             Self::False => write!(f, "False"),
             Self::Pop => write!(f, "Pop"),
@@ -129,7 +129,7 @@ impl Display for OpCode {
             Self::Closure => write!(f, "Closure"),
             Self::CloseUpvalue => write!(f, "CloseUpvalue"),
             Self::Return => write!(f, "Return"),
-            Self::Struct => write!(f, "Class"),
+            Self::Struct => write!(f, "Struct"),
             Self::Inherit => write!(f, "Inherit"),
             Self::Method => write!(f, "Method"),
             Self::Unknown => write!(f, "Unknown"),
