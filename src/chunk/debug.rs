@@ -11,7 +11,7 @@ impl Chunk {
     pub fn disassemble_chunk(&self, name: &str) {
         println!("== {name} ==");
         let mut offset = 0;
-        while offset < self.code.len() {
+        while offset < self.bytecodes.len() {
             offset = self.disassemble_instruction(offset);
         }
     }
@@ -29,7 +29,7 @@ impl Chunk {
             print!("{:4} ", self.line_numbers[offset]);
         }
 
-        let instruction: OpCode = self.code[offset].into();
+        let instruction: OpCode = self.bytecodes[offset].into();
         match instruction {
             // constant
             Constant => self.constant_instruction(Constant.to_string().as_str(), offset),
@@ -81,20 +81,20 @@ impl Chunk {
             // closure
             Closure => {
                 let mut i = offset + 1;
-                let constant = self.code[i];
+                let constant = self.bytecodes[i];
                 i += 1;
                 print!("{:-16} {constant:4} ", Closure.to_string());
                 self.constant_pool.print_nth(constant as usize);
                 println!();
                 if let Function(function) = self.constant_pool.get(constant as usize) {
                     for _ in 0..function.upvalue_count {
-                        let is_local: &str = if self.code[i] == 0 {
+                        let is_local: &str = if self.bytecodes[i] == 0 {
                             "upvalue"
                         } else {
                             "local"
                         };
                         i += 1;
-                        let index = self.code[i];
+                        let index = self.bytecodes[i];
                         i += 1;
                         println!("{:04}      |                     {is_local} {index}", i - 2);
                     }
@@ -115,7 +115,7 @@ impl Chunk {
     }
 
     fn constant_instruction(&self, name: &str, offset: usize) -> usize {
-        let index = self.code[offset + 1];
+        let index = self.bytecodes[offset + 1];
         print!("{name:<16} {index:>4} '");
         self.constant_pool.print_nth(index as usize);
         println!("'");
@@ -123,8 +123,8 @@ impl Chunk {
     }
 
     fn invoke_instruction(&self, name: &str, offset: usize) -> usize {
-        let index = self.code[offset + 1];
-        let arg_count = self.code[offset + 2];
+        let index = self.bytecodes[offset + 1];
+        let arg_count = self.bytecodes[offset + 2];
         print!("{name:<16} ({arg_count} args) {index:>4} '");
         self.constant_pool.print_nth(index as usize);
         println!("'");
@@ -137,14 +137,15 @@ impl Chunk {
     }
 
     fn byte_instruction(&self, name: &str, offset: usize) -> usize {
-        let slot = self.code[offset + 1];
+        let slot = self.bytecodes[offset + 1];
         println!("{name:<16} {slot:>4}");
         offset + 2
     }
 
     fn jump_instruction(&self, name: &str, direction: JumpDirection, offset: usize) -> usize {
         use JumpDirection::*;
-        let jump = (self.code[offset + 1] as usize).shl(8) | (self.code[offset + 2] as usize);
+        let jump =
+            (self.bytecodes[offset + 1] as usize).shl(8) | (self.bytecodes[offset + 2] as usize);
         let jump = match direction {
             Forward => offset + 3 + jump,
             Backward => offset + 3 - jump,

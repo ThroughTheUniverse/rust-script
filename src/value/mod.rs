@@ -2,10 +2,17 @@ use crate::object::{
     bound_method::BoundMethod, closure::Closure, function::Function, instance::Instance,
     native_function::NativeFunction, r#struct::Struct,
 };
-use std::{any::Any, cmp::Ordering, fmt::Display, rc::Rc};
+use std::{
+    any::Any,
+    cmp::Ordering,
+    fmt::Display,
+    ops::{Add, Div, Mul, Neg, Sub},
+    rc::Rc,
+};
 
 #[derive(Clone)]
 pub enum Value {
+    None,
     Bool(bool),
     Number(f64),
     String(String),
@@ -15,16 +22,15 @@ pub enum Value {
     Struct(Rc<Struct>),
     Instance(Rc<Instance>),
     BoundMethod(Rc<BoundMethod>),
-    None,
 }
 
 impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use Value::*;
         match self {
+            None => write!(f, "none"),
             Bool(bool) => write!(f, "{}", bool),
             Number(number) => write!(f, "{}", number),
-            None => write!(f, "none"),
             String(string) => write!(f, "{}", string),
             Function(function) => write!(f, "{}", function),
             NativeFunction(_) => write!(f, "<native fn>"),
@@ -41,15 +47,75 @@ impl PartialEq for Value {
         use Value::*;
         match (self, other) {
             (None, None) => true,
+            (Bool(a), Bool(b)) => a == b,
+            (Number(a), Number(b)) => a == b,
             (String(a), String(b)) => a.cmp(b) == Ordering::Equal,
             (Function(a), Function(b)) => Rc::ptr_eq(a, b),
-            (Struct(a), Struct(b)) => Rc::ptr_eq(a, b),
             (NativeFunction(a), NativeFunction(b)) => a.type_id() == b.type_id(),
-            (Number(a), Number(b)) => a == b,
-            (Bool(a), Bool(b)) => a == b,
+            (Struct(a), Struct(b)) => Rc::ptr_eq(a, b),
             (Instance(a), Instance(b)) => Rc::ptr_eq(a, b),
             (BoundMethod(a), BoundMethod(b)) => Rc::ptr_eq(a, b),
             _ => false,
+        }
+    }
+}
+
+impl Neg for Value {
+    type Output = Value;
+
+    fn neg(self) -> Self::Output {
+        use Value::*;
+        match self {
+            Number(a) => Number(-a),
+            _ => panic!("Only number can be negated"),
+        }
+    }
+}
+
+impl Add for Value {
+    type Output = Value;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        use Value::*;
+        match (self, rhs) {
+            (Number(a), Number(b)) => Number(a + b),
+            _ => panic!("Only number can do addition"),
+        }
+    }
+}
+
+impl Sub for Value {
+    type Output = Value;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        use Value::*;
+        match (self, rhs) {
+            (Number(a), Number(b)) => Number(a - b),
+            _ => panic!("Only number can do substration"),
+        }
+    }
+}
+
+impl Mul for Value {
+    type Output = Value;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        use Value::*;
+        match (self, rhs) {
+            (Number(a), Number(b)) => Number(a * b),
+            _ => panic!("Only number can do multiplication"),
+        }
+    }
+}
+
+impl Div for Value {
+    type Output = Value;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        use Value::*;
+        match (self, rhs) {
+            (Number(a), Number(b)) => Number(a / b),
+            _ => panic!("Only number can do division"),
         }
     }
 }

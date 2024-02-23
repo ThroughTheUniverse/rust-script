@@ -42,9 +42,8 @@ pub enum TokenKind {
     EOF,
 }
 
-#[derive(Debug)]
 pub struct Token {
     pub kind: TokenKind,
-    pub text: String,
-    pub line: usize,
+    pub lexeme: String,
+    pub line_number: usize,
 }

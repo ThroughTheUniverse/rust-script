@@ -8,7 +8,7 @@ pub struct Scanner {
     source: Vec<char>,
     start: usize,
     current: usize,
-    line: usize,
+    line_number: usize,
 }
 
 // Implementation for Scanner
@@ -20,9 +20,10 @@ impl Scanner {
             source,
             start: 0,
             current: 0,
-            line: 1,
+            line_number: 1,
         }
     }
+
     pub fn scan_token(&mut self) -> Token {
         self.skip_whitespace();
         self.start = self.current;
@@ -86,26 +87,30 @@ impl Scanner {
 
     // Check if the scanner has reached the end of the source
     fn is_at_end(&self) -> bool {
-        self.source.get(self.current).is_some_and(|c| *c == '\0')
+        self.current == self.source.len()
     }
 
     // Consume the current character and return it
     fn advance(&mut self) -> char {
-        let c = self.source.get(self.current).unwrap().to_owned();
+        let c = self.source[self.current];
         self.current += 1;
         c
     }
 
     // Get the current character without consuming it
     fn peek(&self) -> char {
-        self.source.get(self.current).unwrap().to_owned()
+        if self.is_at_end() {
+            '\0'
+        } else {
+            self.source[self.current]
+        }
     }
 
     fn peek_next(&self) -> char {
         if self.is_at_end() {
             '\0'
         } else {
-            self.source.get(self.current + 1).unwrap().to_owned()
+            self.source[self.current + 1]
         }
     }
 
@@ -124,8 +129,8 @@ impl Scanner {
     fn make_token(&self, kind: TokenKind) -> Token {
         Token {
             kind,
-            text: self.source[self.start..self.current].iter().collect(),
-            line: self.line,
+            lexeme: self.source[self.start..self.current].iter().collect(),
+            line_number: self.line_number,
         }
     }
 
@@ -133,8 +138,8 @@ impl Scanner {
     fn error_token(&self, message: &str) -> Token {
         Token {
             kind: Error,
-            text: message.to_owned(),
-            line: self.line,
+            lexeme: message.to_owned(),
+            line_number: self.line_number,
         }
     }
 
@@ -146,7 +151,7 @@ impl Scanner {
                 continue;
             }
             if c == '\n' {
-                self.line += 1;
+                self.line_number += 1;
                 self.advance();
                 continue;
             }
@@ -239,7 +244,7 @@ impl Scanner {
     fn string(&mut self) -> Token {
         while self.peek() != '"' && self.is_at_end() {
             if self.peek() == '\n' {
-                self.line += 1;
+                self.line_number += 1;
             }
             self.advance();
         }
