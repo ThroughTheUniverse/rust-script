@@ -1,20 +1,19 @@
 pub mod debug;
 pub mod opcode;
-use crate::value::{Constants, Value};
+use crate::value::{ConstantPool, Value};
 
-#[derive(PartialEq, Eq)]
 pub struct Chunk {
     code: Vec<u8>,
-    positions: Vec<usize>,
-    constants: Constants,
+    line_numbers: Vec<usize>,
+    constant_pool: ConstantPool,
 }
 
 impl Chunk {
     pub fn new() -> Self {
         Chunk {
             code: Vec::new(),
-            positions: Vec::new(),
-            constants: Constants::new(),
+            line_numbers: Vec::new(),
+            constant_pool: ConstantPool::new(),
         }
     }
 

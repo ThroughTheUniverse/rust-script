@@ -54,22 +54,24 @@ impl PartialEq for Value {
     }
 }
 
-pub struct Constants {
-    pub values: Vec<Value>,
-}
+pub struct ConstantPool(pub Vec<Value>);
 
-impl Constants {
+impl ConstantPool {
     pub fn new() -> Self {
-        Constants { values: Vec::new() }
+        ConstantPool(Vec::new())
     }
 
-    pub fn print_nth(&self, nth: usize) {
-        print!("{}", self.values.get(nth).unwrap());
+    pub fn print_nth(&self, index: usize) {
+        print!("{}", self.0.get(index).unwrap());
     }
 
-    pub fn write_value(&mut self, value: Value) -> usize {
-        let index = self.values.len();
-        self.values.push(value);
+    pub fn get(&self, index: usize) -> &Value {
+        &self.0[index]
+    }
+
+    pub fn push(&mut self, value: Value) -> usize {
+        let index = self.0.len();
+        self.0.push(value);
         index
     }
 }
