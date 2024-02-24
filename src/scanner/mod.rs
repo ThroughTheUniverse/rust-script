@@ -2,6 +2,9 @@ use crate::scanner::token::Token;
 use crate::scanner::token::TokenKind;
 use crate::scanner::token::TokenKind::*;
 
+#[cfg(test)]
+mod tests;
+
 pub mod token;
 
 pub struct Scanner {
@@ -15,7 +18,8 @@ pub struct Scanner {
 impl Scanner {
     // Initialize a new Scanner
     pub fn new(source: &str) -> Self {
-        let source = source.chars().collect::<Vec<char>>();
+        let mut source = source.chars().collect::<Vec<char>>();
+        source.push('\0');
         Scanner {
             source,
             start: 0,
@@ -87,7 +91,7 @@ impl Scanner {
 
     // Check if the scanner has reached the end of the source
     fn is_at_end(&self) -> bool {
-        self.current == self.source.len()
+        self.source[self.current] == '\0'
     }
 
     // Consume the current character and return it
@@ -99,11 +103,7 @@ impl Scanner {
 
     // Get the current character without consuming it
     fn peek(&self) -> char {
-        if self.is_at_end() {
-            '\0'
-        } else {
-            self.source[self.current]
-        }
+        self.source[self.current]
     }
 
     fn peek_next(&self) -> char {
@@ -207,7 +207,7 @@ impl Scanner {
                     match self.source.get(self.start + 1).unwrap() {
                         'e' => self.check_keyword(2, 2, "lf", Self_),
                         't' => self.check_keyword(2, 4, "ruct", Struct),
-                        'u' => self.check_keyword(2, 4, "uper", Super),
+                        'u' => self.check_keyword(2, 3, "per", Super),
                         _ => Identifier,
                     }
                 } else {
@@ -242,14 +242,14 @@ impl Scanner {
     }
 
     fn string(&mut self) -> Token {
-        while self.peek() != '"' && self.is_at_end() {
+        while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
                 self.line_number += 1;
             }
             self.advance();
         }
         if self.is_at_end() {
-            return self.error_token("Unterminated string");
+            return self.error_token("Unterminated string.");
         }
         self.advance();
         self.make_token(String)
