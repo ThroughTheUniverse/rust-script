@@ -4,7 +4,7 @@ use crate::value::{ConstantPool, Value};
 
 pub struct Chunk {
     pub bytecodes: Vec<u8>,
-    line_numbers: Vec<usize>,
+    pub line_numbers: Vec<usize>,
     pub constant_pool: ConstantPool,
 }
 

@@ -120,6 +120,15 @@ impl Div for Value {
     }
 }
 
+impl Value {
+    pub fn is_number(&self) -> bool {
+        match self {
+            Self::Number(_) => true,
+            _ => false,
+        }
+    }
+}
+
 pub struct ConstantPool(pub Vec<Value>);
 
 impl ConstantPool {
