@@ -2,32 +2,32 @@ use std::ops::Add;
 
 use crate::{
     chunk::{opcode::OpCode, Chunk},
+    compiler::{Compiler, InterpretError},
     value::Value,
 };
 
-pub enum InterpretResult {
-    Ok,
-    CompileError,
-    RuntimeError,
-}
-
-pub struct VirtualMachine<'a> {
-    chunk: &'a Chunk,
+pub struct VirtualMachine {
     instruction_pointer: usize,
     stack: Vec<Value>,
 }
 
-impl<'a> VirtualMachine<'a> {
-    pub fn new(chunk: &'a Chunk) -> Self {
+impl VirtualMachine {
+    pub fn new() -> Self {
         Self {
-            chunk,
             instruction_pointer: 0,
             stack: Vec::new(),
         }
     }
 
-    pub fn run(&mut self) -> InterpretResult {
-        use InterpretResult::*;
+    pub fn interpret(&mut self, source: &str) -> Result<(), InterpretError> {
+        let mut chunk = Chunk::new();
+        let mut compiler = Compiler::new(&mut chunk);
+        compiler.compile(source)?;
+        self.instruction_pointer = 0;
+        self.run(&chunk)
+    }
+
+    pub fn run(&mut self, chunk: &Chunk) -> Result<(), InterpretError> {
         use OpCode::*;
         loop {
             #[cfg(feature = "debug_trace_execution")]
@@ -42,14 +42,14 @@ impl<'a> VirtualMachine<'a> {
                 chunk.disassemble_instruction(self.ip);
             }
 
-            let instruction: OpCode = self.read_one_bytecode().into();
+            let instruction: OpCode = self.read_one_bytecode(chunk).into();
             match instruction {
                 Return => {
                     println!("{}", self.stack.pop().unwrap());
-                    return Ok;
+                    return Ok(());
                 }
                 Constant => {
-                    let constant = self.read_one_constant();
+                    let constant = self.read_one_constant(chunk);
                     self.stack.push(constant);
                 }
                 Negate => {
@@ -60,20 +60,20 @@ impl<'a> VirtualMachine<'a> {
                 Subtract => self.binary_operator(Subtract),
                 Multiply => self.binary_operator(Multiply),
                 Divide => self.binary_operator(Divide),
-                _ => return RuntimeError,
+                _ => return Err(InterpretError::RuntimeError),
             }
         }
     }
 
-    fn read_one_bytecode(&mut self) -> u8 {
-        let bytecode = self.chunk.bytecodes[self.instruction_pointer];
+    fn read_one_bytecode(&mut self, chunk: &Chunk) -> u8 {
+        let bytecode = chunk.bytecodes[self.instruction_pointer];
         self.instruction_pointer += 1;
         bytecode
     }
 
-    fn read_one_constant(&mut self) -> Value {
-        let index = self.read_one_bytecode();
-        self.chunk.constant_pool.get(index as usize).clone()
+    fn read_one_constant(&mut self, chunk: &Chunk) -> Value {
+        let index = self.read_one_bytecode(chunk);
+        chunk.constant_pool.get(index as usize).clone()
     }
 
     fn binary_operator(&mut self, operator: OpCode) {

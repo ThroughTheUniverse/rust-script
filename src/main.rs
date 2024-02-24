@@ -1,35 +1,50 @@
+use std::{
+    env::args,
+    fs,
+    io::{self, stdin, stdout, Write},
+};
+
 use chunk::{opcode::OpCode, Chunk};
 use scanner::Scanner;
 use vm::VirtualMachine;
 
 mod chunk;
+mod compiler;
 mod object;
 mod scanner;
 mod value;
 mod vm;
 
 fn main() {
-    let mut chunk = Chunk::new();
-    let constant = chunk.push_constant(value::Value::Number(3.0));
-    chunk.push_bytecode(OpCode::Constant, 123);
-    chunk.push_bytecode(constant, 123);
+    let args: Vec<String> = args().collect();
+    let mut vm = VirtualMachine::new();
 
-    let constant = chunk.push_constant(value::Value::Number(3.0));
-    chunk.push_bytecode(OpCode::Constant, 123);
-    chunk.push_bytecode(constant, 123);
+    // match args.len() {
+    //     1 => repl(&mut vm),
+    //     2 => run_file(&mut vm, &args[1]).expect("not file"),
+    //     _ => {
+    //         println!("Usage: rusts [script]")
+    //     }
+    // }
+    vm.interpret("1 / 2 * 3 +3.5");
+}
 
-    chunk.push_bytecode(OpCode::Add, 123);
+fn repl(vm: &mut VirtualMachine) {
+    let mut line = String::new();
+    loop {
+        print!("> ");
+        stdout().flush().unwrap();
+        stdin().read_line(&mut line);
+        let line = line.trim();
+        if line.is_empty() {
+            break;
+        }
+        vm.interpret(line);
+    }
+}
 
-    let constant = chunk.push_constant(value::Value::Number(2.0));
-    chunk.push_bytecode(OpCode::Constant, 123);
-    chunk.push_bytecode(constant, 123);
-
-    chunk.push_bytecode(OpCode::Divide, 123);
-    chunk.push_bytecode(OpCode::Negate, 123);
-
-    chunk.push_bytecode(OpCode::Return, 123);
-    chunk.disassemble_chunk("test chunk");
-
-    let mut vm = VirtualMachine::new(&chunk);
-    vm.run();
+fn run_file(vm: &mut VirtualMachine, path: &str) -> io::Result<()> {
+    let file = fs::read_to_string(path)?;
+    vm.interpret(&file);
+    Ok(())
 }

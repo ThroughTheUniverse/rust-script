@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum TokenKind {
     LeftParen,
     RightParen,
@@ -42,7 +42,7 @@ pub enum TokenKind {
     EOF,
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Token {
     pub kind: TokenKind,
     pub lexeme: String,

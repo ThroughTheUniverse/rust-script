@@ -22,7 +22,7 @@ impl Chunk {
         self.line_numbers.push(line_number);
     }
 
-    pub fn push_constant(&mut self, value: Value) -> u8 {
-        self.constant_pool.push(value) as u8
+    pub fn push_constant(&mut self, value: Value) -> Option<u8> {
+        self.constant_pool.push(value).try_into().ok()
     }
 }
