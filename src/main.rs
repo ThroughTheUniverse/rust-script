@@ -26,7 +26,13 @@ fn main() {
     //         println!("Usage: rusts [script]")
     //     }
     // }
-    vm.interpret("( \"abc\" + \"bcd\" )");
+    vm.interpret(
+        r#"let breakfast = "beignets";
+let beverage = "cafe au lait";
+breakfast = "beignets with " + beverage;
+
+print breakfast;"#,
+    );
 }
 
 fn repl(vm: &mut VirtualMachine) {

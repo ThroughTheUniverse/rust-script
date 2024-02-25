@@ -3,7 +3,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::{parse_rule::Precedence, Compiler};
 
 impl<'a> Compiler<'a> {
-    pub fn parse_unary(&mut self) {
+    pub fn parse_unary(&mut self, _can_assign: bool) {
         use OpCode::*;
         use TokenKind::*;
 

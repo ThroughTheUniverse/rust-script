@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     chunk::{opcode::OpCode, Chunk},
     compiler::{Compiler, InterpretError},
@@ -8,6 +10,7 @@ pub struct VirtualMachine {
     instruction_pointer: usize,
     stack: Vec<Value>,
     chunk: Chunk,
+    globals: HashMap<String, Value>,
 }
 
 impl VirtualMachine {
@@ -16,6 +19,7 @@ impl VirtualMachine {
             instruction_pointer: 0,
             stack: Vec::new(),
             chunk: Chunk::new(),
+            globals: HashMap::new(),
         }
     }
 
@@ -47,8 +51,10 @@ impl VirtualMachine {
 
             let instruction: OpCode = self.read_one_bytecode().into();
             match instruction {
-                Return => {
+                Print => {
                     println!("{}", self.stack.pop().unwrap());
+                }
+                Return => {
                     return Ok(());
                 }
                 Constant => {
@@ -58,13 +64,45 @@ impl VirtualMachine {
                 None => self.stack.push(Value::None),
                 True => self.stack.push(Value::Bool(true)),
                 False => self.stack.push(Value::Bool(false)),
+                Pop => {
+                    self.stack.pop();
+                }
+                GetGlobal => {
+                    if let Value::String(name) = self.read_one_constant() {
+                        if let Some(value) = self.globals.get(&name) {
+                            self.stack.push(value.clone());
+                        } else {
+                            return self.runtime_error(&format!("Undefined variable '{}'", name));
+                        }
+                    } else {
+                        return self.runtime_error("No identifier name");
+                    }
+                }
+                DefineGlobal => {
+                    if let Value::String(name) = self.read_one_constant() {
+                        self.globals.insert(name, self.peek(0));
+                        self.stack.pop();
+                    } else {
+                        return self.runtime_error("No identifier name");
+                    }
+                }
+                SetGlobal => {
+                    if let Value::String(name) = self.read_one_constant() {
+                        if let Option::None = self.globals.insert(name.clone(), self.peek(0)) {
+                            self.globals.remove(&name);
+                            return self.runtime_error(&format!("Undefined variable '{}'", name));
+                        }
+                    } else {
+                        return self.runtime_error("No identifier name");
+                    }
+                }
                 Equal => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
                     self.stack.push(Value::Bool(a == b));
                 }
-                OpCode::Greater => self.binary_operator(OpCode::Greater)?,
-                OpCode::Less => self.binary_operator(OpCode::Less)?,
+                Greater => self.binary_operator(Greater)?,
+                Less => self.binary_operator(Less)?,
                 Add => self.binary_operator(Add)?,
                 Subtract => self.binary_operator(Subtract)?,
                 Multiply => self.binary_operator(Multiply)?,

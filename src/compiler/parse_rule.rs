@@ -1,4 +1,4 @@
-use std::{collections::HashMap, usize};
+use std::collections::HashMap;
 
 use crate::scanner::token::TokenKind;
 
@@ -44,15 +44,15 @@ impl Into<u8> for Precedence {
 }
 
 pub struct ParseRule {
-    pub prefix_handler: Option<fn(&mut Compiler)>,
-    pub infix_handler: Option<fn(&mut Compiler)>,
+    pub prefix_handler: Option<fn(&mut Compiler, can_assign: bool)>,
+    pub infix_handler: Option<fn(&mut Compiler, can_assign: bool)>,
     pub precedence: Precedence,
 }
 
 impl ParseRule {
     pub fn new(
-        prefix_handler: Option<fn(&mut Compiler)>,
-        infix_handler: Option<fn(&mut Compiler)>,
+        prefix_handler: Option<fn(&mut Compiler, can_assign: bool)>,
+        infix_handler: Option<fn(&mut Compiler, can_assign: bool)>,
         precedence: Precedence,
     ) -> Self {
         Self {
@@ -70,7 +70,11 @@ impl Rules {
         Self(HashMap::from([
             (
                 TokenKind::LeftParen,
-                ParseRule::new(Some(|c| c.parse_grouping()), None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parse_grouping(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (
                 TokenKind::RightParen,
@@ -92,14 +96,18 @@ impl Rules {
             (
                 TokenKind::Minus,
                 ParseRule::new(
-                    Some(|c| c.parse_unary()),
-                    Some(|c| c.parse_binary()),
+                    Some(|c, can_assign| c.parse_unary(can_assign)),
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
                     Precedence::Term,
                 ),
             ),
             (
                 TokenKind::Plus,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Term),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Term,
+                ),
             ),
             (
                 TokenKind::Semicolon,
@@ -107,19 +115,35 @@ impl Rules {
             ),
             (
                 TokenKind::Slash,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Factor),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Factor,
+                ),
             ),
             (
                 TokenKind::Star,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Factor),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Factor,
+                ),
             ),
             (
                 TokenKind::Bang,
-                ParseRule::new(Some(|c| c.parse_unary()), None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parse_unary(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (
                 TokenKind::BangEqual,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Equality),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Equality,
+                ),
             ),
             (
                 TokenKind::Equal,
@@ -127,35 +151,67 @@ impl Rules {
             ),
             (
                 TokenKind::EqualEqual,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Equality),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Equality,
+                ),
             ),
             (
                 TokenKind::Greater,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Comparison),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Comparison,
+                ),
             ),
             (
                 TokenKind::GreaterEqual,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Comparison),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Comparison,
+                ),
             ),
             (
                 TokenKind::Less,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Comparison),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Comparison,
+                ),
             ),
             (
                 TokenKind::LessEqual,
-                ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Comparison),
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary(can_assign)),
+                    Precedence::Comparison,
+                ),
             ),
             (
                 TokenKind::Identifier,
-                ParseRule::new(None, None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parse_identifier(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (
                 TokenKind::String,
-                ParseRule::new(Some(|c| c.parser_string()), None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parser_string(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (
                 TokenKind::Number,
-                ParseRule::new(Some(|c| c.parse_number()), None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parse_number(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (TokenKind::And, ParseRule::new(None, None, Precedence::And)),
             (
@@ -168,14 +224,22 @@ impl Rules {
             ),
             (
                 TokenKind::False,
-                ParseRule::new(Some(|c| c.parser_literal()), None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parser_literal(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (TokenKind::For, ParseRule::new(None, None, Precedence::None)),
             (TokenKind::Fn, ParseRule::new(None, None, Precedence::None)),
             (TokenKind::If, ParseRule::new(None, None, Precedence::None)),
             (
                 TokenKind::None,
-                ParseRule::new(Some(|c| c.parser_literal()), None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parser_literal(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (TokenKind::Or, ParseRule::new(None, None, Precedence::Or)),
             (
@@ -196,7 +260,11 @@ impl Rules {
             ),
             (
                 TokenKind::True,
-                ParseRule::new(Some(|c| c.parser_literal()), None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parser_literal(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (TokenKind::Let, ParseRule::new(None, None, Precedence::None)),
             (

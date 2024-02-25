@@ -3,7 +3,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl<'a> Compiler<'a> {
-    pub fn parser_literal(&mut self) {
+    pub fn parser_literal(&mut self, _can_assign: bool) {
         use TokenKind::*;
         match self.parser.previous.kind {
             False => self.emit_one_byte(OpCode::False),

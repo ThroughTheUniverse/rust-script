@@ -1,6 +1,9 @@
 use crate::{
     chunk::{opcode::OpCode, Chunk},
-    scanner::{token::TokenKind, Scanner},
+    scanner::{
+        token::{Token, TokenKind},
+        Scanner,
+    },
     value::Value,
 };
 
@@ -10,11 +13,17 @@ use self::{
 };
 
 mod parse_binary;
+mod parse_declaration;
 mod parse_expression;
+mod parse_expression_statement;
 mod parse_grouping;
+mod parse_identifier;
+mod parse_let;
 mod parse_literal;
 mod parse_number;
+mod parse_print;
 mod parse_rule;
+mod parse_statement;
 mod parse_string;
 mod parse_unary;
 mod parser;
@@ -44,8 +53,9 @@ impl<'a> Compiler<'a> {
     pub fn compile(&mut self, source: &str) -> Result<(), InterpretError> {
         self.scanner = Scanner::new(source);
         self.advance();
-        self.parse_expression();
-        self.consume(TokenKind::EOF, "Expect end of expression");
+        while !self.matches(TokenKind::EOF) {
+            self.parse_declaration();
+        }
         self.end_complier();
         if self.parser.had_error.get() {
             Err(InterpretError::CompileError)
@@ -72,6 +82,19 @@ impl<'a> Compiler<'a> {
             return;
         }
         self.parser.error_at_current(message);
+    }
+
+    fn matches(&mut self, kind: TokenKind) -> bool {
+        if !self.check(kind) {
+            return false;
+        }
+
+        self.advance();
+        true
+    }
+
+    fn check(&self, kind: TokenKind) -> bool {
+        self.parser.current.kind == kind
     }
 
     fn emit_one_byte<T: Into<u8>>(&mut self, byte: T) {
@@ -105,19 +128,43 @@ impl<'a> Compiler<'a> {
         self.emit_two_bytes(OpCode::Constant, index);
     }
 
+    fn emit_identifier_constant(&mut self, name: String) -> u8 {
+        self.make_constant(Value::String(name))
+    }
+
     fn parse_precedence(&mut self, precedence: Precedence) {
         self.advance();
         if let Some(prefix_handler) = self.rules.get(self.parser.previous.kind).prefix_handler {
-            prefix_handler(self);
+            let can_assign = precedence <= Precedence::Assignment;
+            prefix_handler(self, can_assign);
             while precedence <= self.rules.get(self.parser.current.kind).precedence {
                 self.advance();
                 if let Some(infix_handler) = self.rules.get(self.parser.previous.kind).infix_handler
                 {
-                    infix_handler(self);
+                    infix_handler(self, can_assign);
+                }
+                if can_assign && self.matches(TokenKind::Equal) {
+                    self.parser.error("Invalid assignment target.");
                 }
             }
         } else {
             self.parser.error("Expect expression");
+        }
+    }
+
+    fn synchronize(&mut self) {
+        use TokenKind::*;
+        self.parser.is_panic_mode.set(false);
+
+        while self.parser.current.kind != EOF {
+            if self.parser.previous.kind == Semicolon {
+                return;
+            }
+
+            match self.parser.current.kind {
+                Struct | Fn | Let | For | If | While | Print | Return => return,
+                _ => self.advance(),
+            }
         }
     }
 }
