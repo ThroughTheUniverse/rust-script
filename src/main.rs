@@ -27,11 +27,12 @@ fn main() {
     //     }
     // }
     vm.interpret(
-        r#"let breakfast = "beignets";
-let beverage = "cafe au lait";
-breakfast = "beignets with " + beverage;
-
-print breakfast;"#,
+        r#"
+        let a = 1;
+        {
+            let b = 2;
+            print(a+b);
+        }"#,
     );
 }
 

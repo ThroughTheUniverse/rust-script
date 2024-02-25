@@ -37,17 +37,16 @@ impl VirtualMachine {
     pub fn run(&mut self) -> Result<(), InterpretError> {
         use OpCode::*;
         loop {
-            #[cfg(feature = "debug_trace_execution")]
-            {
-                print!("          ");
-                self.stack.iter().for_each(|value| {
-                    print!("[ ");
-                    println!("{value}");
-                    print!(" ]");
-                });
-                println!();
-                chunk.disassemble_instruction(self.ip);
-            }
+            // {
+            //     print!("          ");
+            //     self.stack.iter().for_each(|value| {
+            //         print!("[ ");
+            //         println!("{value}");
+            //         print!(" ]");
+            //     });
+            //     println!();
+            //     self.chunk.disassemble_instruction(self.instruction_pointer);
+            // }
 
             let instruction: OpCode = self.read_one_bytecode().into();
             match instruction {
@@ -66,6 +65,15 @@ impl VirtualMachine {
                 False => self.stack.push(Value::Bool(false)),
                 Pop => {
                     self.stack.pop();
+                }
+                GetLocal => {
+                    let slot = self.read_one_bytecode();
+                    let value = self.stack[slot as usize].clone();
+                    self.stack.push(value);
+                }
+                SetLocal => {
+                    let slot = self.read_one_bytecode();
+                    self.stack[slot as usize] = self.peek(0);
                 }
                 GetGlobal => {
                     if let Value::String(name) = self.read_one_constant() {

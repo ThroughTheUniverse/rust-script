@@ -8,11 +8,14 @@ use crate::{
 };
 
 use self::{
+    locals::Local,
     parse_rule::{Precedence, Rules},
     parser::Parser,
 };
 
+mod locals;
 mod parse_binary;
+mod parse_block;
 mod parse_declaration;
 mod parse_expression;
 mod parse_expression_statement;
@@ -38,6 +41,8 @@ pub struct Compiler<'a> {
     pub scanner: Scanner,
     chunk: &'a mut Chunk,
     rules: Rules,
+    pub locals: Vec<Local>,
+    pub scope_depth: usize,
 }
 
 impl<'a> Compiler<'a> {
@@ -47,6 +52,8 @@ impl<'a> Compiler<'a> {
             scanner: Scanner::new(""),
             chunk,
             rules: Rules::new(),
+            locals: Vec::new(),
+            scope_depth: 0,
         }
     }
 
@@ -115,6 +122,26 @@ impl<'a> Compiler<'a> {
         self.emit_return();
     }
 
+    fn begin_scope(&mut self) {
+        self.scope_depth += 1;
+    }
+
+    fn end_scope(&mut self) {
+        self.scope_depth -= 1;
+
+        while self.locals.len() > 0
+            && self
+                .locals
+                .last()
+                .unwrap()
+                .depth
+                .is_some_and(|depth| depth > self.scope_depth)
+        {
+            self.emit_one_byte(OpCode::Pop);
+            self.locals.pop();
+        }
+    }
+
     fn make_constant(&mut self, value: Value) -> u8 {
         if let Some(index) = self.chunk.push_constant(value) {
             index
@@ -166,5 +193,13 @@ impl<'a> Compiler<'a> {
                 _ => self.advance(),
             }
         }
+    }
+
+    fn add_local(&mut self, name: Token) {
+        if self.locals.len() == u8::MAX as usize {
+            self.parser.error("Too many local variables in function.");
+            return;
+        }
+        self.locals.push(Local::new(name, None));
     }
 }
