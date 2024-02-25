@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     chunk::{opcode::OpCode, Chunk},
     scanner::{token::TokenKind, Scanner},
@@ -7,13 +5,14 @@ use crate::{
 };
 
 use self::{
-    parse_rule::{ParseRule, Precedence},
+    parse_rule::{Precedence, Rules},
     parser::Parser,
 };
 
 mod parse_binary;
 mod parse_expression;
 mod parse_grouping;
+mod parse_literal;
 mod parse_number;
 mod parse_rule;
 mod parse_unary;
@@ -28,7 +27,7 @@ pub struct Compiler<'a> {
     pub parser: Parser,
     pub scanner: Scanner,
     chunk: &'a mut Chunk,
-    rules: HashMap<TokenKind, ParseRule>,
+    rules: Rules,
 }
 
 impl<'a> Compiler<'a> {
@@ -37,37 +36,7 @@ impl<'a> Compiler<'a> {
             parser: Parser::new(),
             scanner: Scanner::new(""),
             chunk,
-            rules: HashMap::from([
-                (
-                    TokenKind::LeftParen,
-                    ParseRule::new(Some(|c| c.parse_grouping()), None, Precedence::None),
-                ),
-                (
-                    TokenKind::Minus,
-                    ParseRule::new(
-                        Some(|c| c.parse_unary()),
-                        Some(|c| c.parse_binary()),
-                        Precedence::Term,
-                    ),
-                ),
-                (
-                    TokenKind::Plus,
-                    ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Term),
-                ),
-                (
-                    TokenKind::Slash,
-                    ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Factor),
-                ),
-                (
-                    TokenKind::Star,
-                    ParseRule::new(None, Some(|c| c.parse_binary()), Precedence::Factor),
-                ),
-                (
-                    TokenKind::Number,
-                    ParseRule::new(Some(|c| c.parse_number()), None, Precedence::None),
-                ),
-                (TokenKind::EOF, ParseRule::new(None, None, Precedence::None)),
-            ]),
+            rules: Rules::new(),
         }
     }
 
@@ -137,26 +106,11 @@ impl<'a> Compiler<'a> {
 
     fn parse_precedence(&mut self, precedence: Precedence) {
         self.advance();
-        if let Some(prefix_handler) = self
-            .rules
-            .get(&self.parser.previous.kind)
-            .unwrap()
-            .prefix_handler
-        {
+        if let Some(prefix_handler) = self.rules.get(self.parser.previous.kind).prefix_handler {
             prefix_handler(self);
-            while precedence
-                <= self
-                    .rules
-                    .get(&self.parser.current.kind)
-                    .unwrap()
-                    .precedence
-            {
+            while precedence <= self.rules.get(self.parser.current.kind).precedence {
                 self.advance();
-                if let Some(infix_handler) = self
-                    .rules
-                    .get(&self.parser.previous.kind)
-                    .unwrap()
-                    .infix_handler
+                if let Some(infix_handler) = self.rules.get(self.parser.previous.kind).infix_handler
                 {
                     infix_handler(self);
                 }

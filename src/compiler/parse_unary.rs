@@ -10,6 +10,7 @@ impl<'a> Compiler<'a> {
         let unary_operator = self.parser.previous.kind;
         self.parse_precedence(Precedence::Unary);
         match unary_operator {
+            Bang => self.emit_one_byte(Not),
             Minus => self.emit_one_byte(Negate),
             _ => todo!(),
         }

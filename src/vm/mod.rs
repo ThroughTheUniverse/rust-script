@@ -55,10 +55,22 @@ impl VirtualMachine {
                     let constant = self.read_one_constant();
                     self.stack.push(constant);
                 }
-                Add => self.binary_operator(Add),
-                Subtract => self.binary_operator(Subtract),
-                Multiply => self.binary_operator(Multiply),
-                Divide => self.binary_operator(Divide),
+                None => self.stack.push(Value::None),
+                True => self.stack.push(Value::Bool(true)),
+                False => self.stack.push(Value::Bool(false)),
+                Equal => {
+                    let b = self.stack.pop().unwrap();
+                    let a = self.stack.pop().unwrap();
+                    self.stack.push(Value::Bool(a == b));
+                }
+                Add => self.binary_operator(Add)?,
+                Subtract => self.binary_operator(Subtract)?,
+                Multiply => self.binary_operator(Multiply)?,
+                Divide => self.binary_operator(Divide)?,
+                Not => {
+                    let value = self.stack.pop().unwrap().is_falsey();
+                    self.stack.push(Value::Bool(value));
+                }
                 Negate => {
                     if !self.peek(0).is_number() {
                         return self.runtime_error("Operand must be a number.");
@@ -95,6 +107,8 @@ impl VirtualMachine {
             Subtract => a - b,
             Multiply => a * b,
             Divide => a / b,
+            Greater => Value::Bool(a > b),
+            Less => Value::Bool(a < b),
             _ => return Err(InterpretError::RuntimeError),
         };
         self.stack.push(result);

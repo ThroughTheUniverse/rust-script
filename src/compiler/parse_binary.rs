@@ -7,10 +7,16 @@ impl<'a> Compiler<'a> {
         use OpCode::*;
         use TokenKind::*;
         let binary_operator = self.parser.previous.kind;
-        let precedence: u8 = self.rules.get(&binary_operator).unwrap().precedence.into();
+        let precedence: u8 = self.rules.get(binary_operator).precedence.into();
         self.parse_precedence((precedence + 1).into());
 
         match binary_operator {
+            BangEqual => self.emit_two_bytes(OpCode::Equal, Not),
+            EqualEqual => self.emit_one_byte(OpCode::Equal),
+            TokenKind::Greater => self.emit_one_byte(OpCode::Greater),
+            GreaterEqual => self.emit_two_bytes(OpCode::Less, Not),
+            TokenKind::Less => self.emit_one_byte(OpCode::Less),
+            LessEqual => self.emit_two_bytes(OpCode::Greater, Not),
             Plus => self.emit_one_byte(Add),
             Minus => self.emit_one_byte(Subtract),
             Star => self.emit_one_byte(Multiply),

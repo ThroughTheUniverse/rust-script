@@ -60,6 +60,17 @@ impl PartialEq for Value {
     }
 }
 
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match (self, other) {
+            (Value::Bool(a), Value::Bool(b)) => a.partial_cmp(b),
+            (Value::Number(a), Value::Number(b)) => a.partial_cmp(b),
+            (Value::String(a), Value::String(b)) => a.partial_cmp(b),
+            _ => None,
+        }
+    }
+}
+
 impl Neg for Value {
     type Output = Value;
 
@@ -125,6 +136,28 @@ impl Value {
         match self {
             Self::Number(_) => true,
             _ => false,
+        }
+    }
+
+    pub fn is_none(&self) -> bool {
+        match self {
+            Self::None => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_bool(&self) -> bool {
+        match self {
+            Self::Bool(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_falsey(&self) -> bool {
+        if let Value::Bool(boolean) = self {
+            self.is_none() || (self.is_bool() && !boolean)
+        } else {
+            false
         }
     }
 }
