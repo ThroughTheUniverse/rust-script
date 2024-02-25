@@ -63,6 +63,8 @@ impl VirtualMachine {
                     let a = self.stack.pop().unwrap();
                     self.stack.push(Value::Bool(a == b));
                 }
+                OpCode::Greater => self.binary_operator(OpCode::Greater)?,
+                OpCode::Less => self.binary_operator(OpCode::Less)?,
                 Add => self.binary_operator(Add)?,
                 Subtract => self.binary_operator(Subtract)?,
                 Multiply => self.binary_operator(Multiply)?,
@@ -97,22 +99,25 @@ impl VirtualMachine {
 
     fn binary_operator(&mut self, operator: OpCode) -> Result<(), InterpretError> {
         use OpCode::*;
-        if !self.peek(0).is_number() || !self.peek(1).is_number() {
-            return self.runtime_error("Operands must be numbers");
+        if (self.peek(0).is_string() && self.peek(1).is_string())
+            || (self.peek(0).is_number() && self.peek(1).is_number())
+        {
+            let b = self.stack.pop().unwrap();
+            let a = self.stack.pop().unwrap();
+            let result = match operator {
+                Add => a + b,
+                Subtract => a - b,
+                Multiply => a * b,
+                Divide => a / b,
+                Greater => Value::Bool(a > b),
+                Less => Value::Bool(a < b),
+                _ => return Err(InterpretError::RuntimeError),
+            };
+            self.stack.push(result);
+            Ok(())
+        } else {
+            self.runtime_error("Operands must be two numbers or two strings.")
         }
-        let b = self.stack.pop().unwrap();
-        let a = self.stack.pop().unwrap();
-        let result = match operator {
-            Add => a + b,
-            Subtract => a - b,
-            Multiply => a * b,
-            Divide => a / b,
-            Greater => Value::Bool(a > b),
-            Less => Value::Bool(a < b),
-            _ => return Err(InterpretError::RuntimeError),
-        };
-        self.stack.push(result);
-        Ok(())
     }
 
     fn peek(&self, distance: usize) -> Value {

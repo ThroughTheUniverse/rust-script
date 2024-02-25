@@ -26,7 +26,7 @@ fn main() {
     //         println!("Usage: rusts [script]")
     //     }
     // }
-    vm.interpret("1 / 2 * 3 +3.5");
+    vm.interpret("( \"abc\" + \"bcd\" )");
 }
 
 fn repl(vm: &mut VirtualMachine) {

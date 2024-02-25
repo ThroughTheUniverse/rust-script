@@ -90,6 +90,7 @@ impl Add for Value {
         use Value::*;
         match (self, rhs) {
             (Number(a), Number(b)) => Number(a + b),
+            (Value::String(a), Value::String(b)) => Value::String(a + &b),
             _ => panic!("Only number can do addition"),
         }
     }
@@ -152,10 +153,20 @@ impl Value {
             _ => false,
         }
     }
+    pub fn is_string(&self) -> bool {
+        match self {
+            Self::String(_) => true,
+            _ => false,
+        }
+    }
 
     pub fn is_falsey(&self) -> bool {
+        if let Value::None = self {
+            return true;
+        }
+
         if let Value::Bool(boolean) = self {
-            self.is_none() || (self.is_bool() && !boolean)
+            !boolean
         } else {
             false
         }

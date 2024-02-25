@@ -151,7 +151,7 @@ impl Rules {
             ),
             (
                 TokenKind::String,
-                ParseRule::new(None, None, Precedence::None),
+                ParseRule::new(Some(|c| c.parser_string()), None, Precedence::None),
             ),
             (
                 TokenKind::Number,

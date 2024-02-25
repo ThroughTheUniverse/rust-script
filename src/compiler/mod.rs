@@ -15,6 +15,7 @@ mod parse_grouping;
 mod parse_literal;
 mod parse_number;
 mod parse_rule;
+mod parse_string;
 mod parse_unary;
 mod parser;
 
