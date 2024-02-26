@@ -2,9 +2,9 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::Compiler;
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parse_while(&mut self) {
-        let loop_start = self.chunk.bytecodes.len();
+        let loop_start = self.current_chunk().bytecodes.len();
         self.consume(TokenKind::LeftParen, "Expect '(' after 'while'.");
         self.parse_expression();
         self.consume(TokenKind::RightParen, "Expect ')' after condition.");
@@ -19,7 +19,7 @@ impl<'a> Compiler<'a> {
 
     pub fn emit_loop(&mut self, loop_start: usize) {
         self.emit_one_byte(OpCode::Loop);
-        let offset = self.chunk.bytecodes.len() - loop_start + 2;
+        let offset = self.current_chunk().bytecodes.len() - loop_start + 2;
         if offset > u16::MAX.into() {
             self.parser().error("Loop body too large.");
         }

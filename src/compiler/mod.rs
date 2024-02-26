@@ -5,6 +5,7 @@ use std::{
 
 use crate::{
     chunk::{opcode::OpCode, Chunk},
+    object::function::Function,
     scanner::{
         token::{Token, TokenKind},
         Scanner,
@@ -25,6 +26,8 @@ mod parse_block;
 mod parse_declaration;
 mod parse_expression;
 mod parse_expression_statement;
+mod parse_fn;
+mod parse_fn_call;
 mod parse_for;
 mod parse_grouping;
 mod parse_identifier;
@@ -46,25 +49,79 @@ pub enum InterpretError {
     RuntimeError,
 }
 
-pub struct Compiler<'a> {
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub enum FunctionKind {
+    Function,
+    Script,
+}
+
+pub struct Compiler {
     parser: Rc<RefCell<Parser>>,
     scanner: Rc<RefCell<Scanner>>,
+    function: Function,
+    kind: FunctionKind,
     rules: Rc<Rules>,
-    chunk: &'a mut Chunk,
     pub locals: Vec<Local>,
     pub scope_depth: usize,
 }
 
-impl<'a> Compiler<'a> {
-    pub fn new(chunk: &'a mut Chunk) -> Self {
-        Self {
+impl Compiler {
+    pub fn new(kind: FunctionKind) -> Self {
+        let mut result = Self {
             parser: Rc::new(RefCell::new(Parser::new())),
             scanner: Rc::new(RefCell::new(Scanner::new(""))),
             rules: Rc::new(Rules::new()),
-            chunk,
-            locals: Vec::new(),
+            function: Function::new(),
+            kind,
+            locals: {
+                let mut locals = Vec::new();
+                locals.push(Local::new(
+                    Token {
+                        kind: TokenKind::Identifier,
+                        lexeme: "".to_string(),
+                        line_number: 1,
+                    },
+                    Some(0),
+                ));
+                locals
+            },
             scope_depth: 0,
+        };
+        if kind != FunctionKind::Script {
+            let name = result.parser().previous.lexeme.clone();
+            result.function.name = name;
         }
+
+        result
+    }
+
+    pub fn fork(&self, kind: FunctionKind) -> Self {
+        let mut result = Self {
+            parser: self.parser.clone(),
+            scanner: self.scanner.clone(),
+            rules: self.rules.clone(),
+            function: Function::new(),
+            kind,
+            locals: {
+                let mut locals = Vec::new();
+                locals.push(Local::new(
+                    Token {
+                        kind: TokenKind::Identifier,
+                        lexeme: "".to_string(),
+                        line_number: 1,
+                    },
+                    Some(0),
+                ));
+                locals
+            },
+            scope_depth: 0,
+        };
+        if kind != FunctionKind::Script {
+            let name = result.parser().previous.lexeme.clone();
+            result.function.name = name;
+        }
+
+        result
     }
 
     fn scanner(&self) -> RefMut<'_, Scanner> {
@@ -79,17 +136,17 @@ impl<'a> Compiler<'a> {
         &self.rules
     }
 
-    pub fn compile(&mut self, source: &str) -> Result<(), InterpretError> {
+    pub fn compile(mut self, source: &str) -> Result<Function, InterpretError> {
         *self.scanner() = Scanner::new(source);
         self.advance();
         while !self.matches(TokenKind::EOF) {
             self.parse_declaration();
         }
-        self.end_complier();
         if self.parser().had_error.get() {
             Err(InterpretError::CompileError)
         } else {
-            Ok(())
+            let function = self.end_complier();
+            Ok(function)
         }
     }
 
@@ -127,9 +184,13 @@ impl<'a> Compiler<'a> {
         self.parser().current.kind == kind
     }
 
+    fn current_chunk(&mut self) -> &mut Chunk {
+        &mut self.function.chunk
+    }
+
     fn emit_one_byte<T: Into<u8>>(&mut self, byte: T) {
         let line_number = self.parser().previous.line_number;
-        self.chunk.push_bytecode(byte.into(), line_number);
+        self.current_chunk().push_bytecode(byte.into(), line_number);
     }
 
     fn emit_two_bytes<T: Into<u8>, U: Into<u8>>(&mut self, byte1: T, byte2: U) {
@@ -141,8 +202,9 @@ impl<'a> Compiler<'a> {
         self.emit_one_byte(OpCode::Return);
     }
 
-    fn end_complier(&mut self) {
+    fn end_complier(mut self) -> Function {
         self.emit_return();
+        self.function
     }
 
     fn begin_scope(&mut self) {
@@ -166,7 +228,7 @@ impl<'a> Compiler<'a> {
     }
 
     fn make_constant(&mut self, value: Value) -> u8 {
-        if let Some(index) = self.chunk.push_constant(value) {
+        if let Some(index) = self.current_chunk().push_constant(value) {
             index
         } else {
             0

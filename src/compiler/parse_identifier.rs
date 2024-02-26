@@ -2,7 +2,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::Compiler;
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parse_identifier(&mut self, can_assign: bool) {
         let name = self.parser().previous.lexeme.to_string();
         self.named_identifier(name, can_assign);

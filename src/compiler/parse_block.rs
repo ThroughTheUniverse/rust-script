@@ -2,7 +2,7 @@ use crate::scanner::token::TokenKind;
 
 use super::Compiler;
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parse_block(&mut self) {
         while !self.check(TokenKind::RightBrace) && !self.check(TokenKind::EOF) {
             self.parse_declaration();

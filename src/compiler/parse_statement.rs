@@ -2,7 +2,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::Compiler;
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parse_statement(&mut self) {
         if self.matches(TokenKind::Print) {
             self.parse_print();

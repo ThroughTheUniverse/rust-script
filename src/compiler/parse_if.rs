@@ -2,7 +2,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::Compiler;
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parse_if(&mut self) {
         self.consume(TokenKind::LeftParen, "Expect '(' after 'if'.");
         self.parse_expression();
@@ -23,17 +23,17 @@ impl<'a> Compiler<'a> {
         self.emit_one_byte(instruction);
         self.emit_one_byte(u8::MAX);
         self.emit_one_byte(u8::MAX);
-        self.chunk.bytecodes.len() - 2
+        self.current_chunk().bytecodes.len() - 2
     }
 
     pub fn patch_jump(&mut self, offset: usize) {
-        let jump = self.chunk.bytecodes.len() - offset - 2;
+        let jump = self.current_chunk().bytecodes.len() - offset - 2;
 
         if jump > u16::MAX.into() {
             self.parser().error("Too much code to jump over.");
         }
 
-        self.chunk.bytecodes[offset] = ((jump >> 8) & 0xff) as u8;
-        self.chunk.bytecodes[offset + 1] = (jump & 0xff) as u8;
+        self.current_chunk().bytecodes[offset] = ((jump >> 8) & 0xff) as u8;
+        self.current_chunk().bytecodes[offset + 1] = (jump & 0xff) as u8;
     }
 }

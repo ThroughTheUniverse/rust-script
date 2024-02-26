@@ -2,7 +2,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::{parse_rule::Precedence, Compiler};
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parse_unary(&mut self, _can_assign: bool) {
         use OpCode::*;
         use TokenKind::*;

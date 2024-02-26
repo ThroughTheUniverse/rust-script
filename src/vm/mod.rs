@@ -1,36 +1,47 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use crate::{
     chunk::{opcode::OpCode, Chunk},
-    compiler::{Compiler, InterpretError},
+    compiler::{Compiler, FunctionKind, InterpretError},
+    object::function::Function,
     value::Value,
 };
 
+struct CallFrame {
+    function: Rc<Function>,
+    ip: usize,
+    base_slot: usize,
+}
+
 pub struct VirtualMachine {
-    instruction_pointer: usize,
+    frames: Vec<CallFrame>,
     stack: Vec<Value>,
-    chunk: Chunk,
     globals: HashMap<String, Value>,
 }
 
 impl VirtualMachine {
     pub fn new() -> Self {
         Self {
-            instruction_pointer: 0,
+            frames: Vec::new(),
             stack: Vec::new(),
-            chunk: Chunk::new(),
             globals: HashMap::new(),
         }
     }
 
+    fn current_frame(&mut self) -> &mut CallFrame {
+        self.frames.last_mut().unwrap()
+    }
+
     pub fn interpret(&mut self, source: &str) -> Result<(), InterpretError> {
-        let mut chunk = Chunk::new();
-        let mut compiler = Compiler::new(&mut chunk);
+        let compiler = Compiler::new(FunctionKind::Script);
 
-        compiler.compile(source)?;
-
-        self.instruction_pointer = 0;
-        self.chunk = chunk;
+        let function = Rc::new(compiler.compile(source)?);
+        self.stack.push(Value::Function(function.clone()));
+        self.frames.push(CallFrame {
+            function: function.clone(),
+            ip: 0,
+            base_slot: 0,
+        });
         self.run()
     }
 
@@ -55,17 +66,17 @@ impl VirtualMachine {
                 }
                 Jump => {
                     let offset = self.read_two_bytecodes();
-                    self.instruction_pointer += offset as usize;
+                    self.current_frame().ip += offset as usize;
                 }
                 JumpIfFalse => {
                     let offset = self.read_two_bytecodes();
                     if self.peek(0).is_falsey() {
-                        self.instruction_pointer += offset as usize;
+                        self.current_frame().ip += offset as usize;
                     }
                 }
                 Loop => {
                     let offset = self.read_two_bytecodes();
-                    self.instruction_pointer -= offset as usize;
+                    self.current_frame().ip -= offset as usize;
                 }
                 Return => {
                     return Ok(());
@@ -82,12 +93,14 @@ impl VirtualMachine {
                 }
                 GetLocal => {
                     let slot = self.read_one_bytecode();
-                    let value = self.stack[slot as usize].clone();
+                    let index = self.current_frame().base_slot + slot as usize;
+                    let value = self.stack[index].clone();
                     self.stack.push(value);
                 }
                 SetLocal => {
                     let slot = self.read_one_bytecode();
-                    self.stack[slot as usize] = self.peek(0);
+                    let index = self.current_frame().base_slot + slot as usize;
+                    self.stack[index] = self.peek(0);
                 }
                 GetGlobal => {
                     if let Value::String(name) = self.read_one_constant() {
@@ -146,22 +159,32 @@ impl VirtualMachine {
         }
     }
 
+    fn current_chunk(&mut self) -> &Chunk {
+        &self.current_frame().function.chunk
+    }
+
     fn read_one_bytecode(&mut self) -> u8 {
-        let bytecode = self.chunk.bytecodes[self.instruction_pointer];
-        self.instruction_pointer += 1;
+        let ip = self.current_frame().ip;
+        let bytecode = self.current_frame().function.chunk.bytecodes[ip];
+        self.current_frame().ip += 1;
         bytecode
     }
 
     fn read_two_bytecodes(&mut self) -> u16 {
-        self.instruction_pointer += 2;
-        let high_byte = self.chunk.bytecodes[self.instruction_pointer - 2];
-        let low_byte = self.chunk.bytecodes[self.instruction_pointer - 1];
+        self.current_frame().ip += 2;
+        let high_index = self.current_frame().ip - 2;
+        let low_index = self.current_frame().ip - 1;
+        let high_byte = self.current_chunk().bytecodes[high_index];
+        let low_byte = self.current_chunk().bytecodes[low_index];
         ((high_byte as u16) << 8) | low_byte as u16
     }
 
     fn read_one_constant(&mut self) -> Value {
         let index = self.read_one_bytecode();
-        self.chunk.constant_pool.get(index as usize).clone()
+        self.current_chunk()
+            .constant_pool
+            .get(index as usize)
+            .clone()
     }
 
     fn binary_operator(&mut self, operator: OpCode) -> Result<(), InterpretError> {
@@ -193,7 +216,8 @@ impl VirtualMachine {
     }
 
     fn runtime_error(&mut self, message: &str) -> Result<(), InterpretError> {
-        let line_number = self.chunk.line_numbers[self.instruction_pointer - 1];
+        let index = self.current_frame().ip - 1;
+        let line_number = self.current_chunk().line_numbers[index];
         eprintln!("{}", message);
         eprintln!("[line {line_number}] in script");
         self.stack = Vec::new();

@@ -28,10 +28,11 @@ fn main() {
     // }
     vm.interpret(
         r#"
-        let a = 10;
-        for (; a != 0 ; a = a - 1) {
-            print(a);
-        }
+        fn areWeHavingItYet() {
+  print "Yes we are!";
+}
+
+print areWeHavingItYet;
         "#,
     );
 }

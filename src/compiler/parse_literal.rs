@@ -2,7 +2,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::Compiler;
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parser_literal(&mut self, _can_assign: bool) {
         use TokenKind::*;
         let kind = self.parser().previous.kind;

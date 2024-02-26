@@ -2,7 +2,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::Compiler;
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parse_for(&mut self) {
         self.begin_scope();
         self.consume(TokenKind::LeftParen, "Expect '(' after 'for'.");
@@ -14,7 +14,7 @@ impl<'a> Compiler<'a> {
             self.parse_expression_statement();
         }
 
-        let mut loop_start = self.chunk.bytecodes.len();
+        let mut loop_start = self.current_chunk().bytecodes.len();
         let mut exit_jump = None;
         if !self.matches(TokenKind::Semicolon) {
             self.parse_expression();
@@ -25,7 +25,7 @@ impl<'a> Compiler<'a> {
 
         if !self.matches(TokenKind::RightParen) {
             let body_jump = self.emit_jump(OpCode::Jump);
-            let increment_start = self.chunk.bytecodes.len();
+            let increment_start = self.current_chunk().bytecodes.len();
             self.parse_expression();
             self.emit_one_byte(OpCode::Pop);
             self.consume(TokenKind::RightParen, "Expect ')' after for clauses.");

@@ -2,7 +2,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::Compiler;
 
-impl<'a> Compiler<'a> {
+impl Compiler {
     pub fn parse_let(&mut self) {
         let global = self.parse_variable("Expect variable name.");
         if self.matches(TokenKind::Equal) {
@@ -17,7 +17,7 @@ impl<'a> Compiler<'a> {
         self.define_variable(global);
     }
 
-    fn parse_variable(&mut self, error_message: &str) -> u8 {
+    pub fn parse_variable(&mut self, error_message: &str) -> u8 {
         self.consume(TokenKind::Identifier, error_message);
 
         self.declare_variable();
@@ -28,7 +28,7 @@ impl<'a> Compiler<'a> {
         self.emit_identifier_constant(name)
     }
 
-    fn define_variable(&mut self, global: u8) {
+    pub fn define_variable(&mut self, global: u8) {
         if self.scope_depth > 0 {
             self.mark_initialized();
             return;
@@ -54,7 +54,10 @@ impl<'a> Compiler<'a> {
         self.add_local(name);
     }
 
-    fn mark_initialized(&mut self) {
+    pub fn mark_initialized(&mut self) {
+        if self.scope_depth == 0 {
+            return;
+        }
         let scope_depth = Some(self.scope_depth);
         self.locals.last_mut().unwrap().depth = scope_depth;
     }
