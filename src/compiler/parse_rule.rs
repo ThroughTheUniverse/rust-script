@@ -72,8 +72,8 @@ impl Rules {
                 TokenKind::LeftParen,
                 ParseRule::new(
                     Some(|c, can_assign| c.parse_grouping(can_assign)),
-                    None,
-                    Precedence::None,
+                    Some(|c, can_assign| c.parse_fn_call(can_assign)),
+                    Precedence::Call,
                 ),
             ),
             (

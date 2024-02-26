@@ -26,13 +26,16 @@ fn main() {
     //         println!("Usage: rusts [script]")
     //     }
     // }
-    vm.interpret(
+    let _ = vm.interpret(
         r#"
-        fn areWeHavingItYet() {
-  print "Yes we are!";
+        fn fib(n) {
+  if (n < 2) return n;
+  return fib(n - 2) + fib(n - 1);
 }
 
-print areWeHavingItYet;
+let start = clock();
+print fib(30);
+print clock() - start;
         "#,
     );
 }

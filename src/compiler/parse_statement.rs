@@ -10,6 +10,8 @@ impl Compiler {
             self.parse_for();
         } else if self.matches(TokenKind::If) {
             self.parse_if();
+        } else if self.matches(TokenKind::Return) {
+            self.parse_return();
         } else if self.matches(TokenKind::While) {
             self.parse_while();
         } else if self.matches(TokenKind::LeftBrace) {

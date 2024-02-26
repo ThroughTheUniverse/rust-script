@@ -37,6 +37,7 @@ mod parse_literal;
 mod parse_number;
 mod parse_or;
 mod parse_print;
+mod parse_return;
 mod parse_rule;
 mod parse_statement;
 mod parse_string;
@@ -199,6 +200,7 @@ impl Compiler {
     }
 
     fn emit_return(&mut self) {
+        self.emit_one_byte(OpCode::None);
         self.emit_one_byte(OpCode::Return);
     }
 

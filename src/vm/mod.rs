@@ -1,9 +1,12 @@
-use std::{collections::HashMap, rc::Rc};
+use std::{collections::HashMap, rc::Rc, result};
 
 use crate::{
     chunk::{opcode::OpCode, Chunk},
     compiler::{Compiler, FunctionKind, InterpretError},
-    object::function::Function,
+    object::{
+        function::{self, Function},
+        native_function::{Clock, NativeFunction},
+    },
     value::Value,
 };
 
@@ -21,11 +24,14 @@ pub struct VirtualMachine {
 
 impl VirtualMachine {
     pub fn new() -> Self {
-        Self {
+        let mut result = Self {
             frames: Vec::new(),
             stack: Vec::new(),
             globals: HashMap::new(),
-        }
+        };
+        let clock = Rc::new(Clock {});
+        result.define_native("clock", clock.clone());
+        result
     }
 
     fn current_frame(&mut self) -> &mut CallFrame {
@@ -37,11 +43,7 @@ impl VirtualMachine {
 
         let function = Rc::new(compiler.compile(source)?);
         self.stack.push(Value::Function(function.clone()));
-        self.frames.push(CallFrame {
-            function: function.clone(),
-            ip: 0,
-            base_slot: 0,
-        });
+        self.call(function.clone(), 0);
         self.run()
     }
 
@@ -78,8 +80,21 @@ impl VirtualMachine {
                     let offset = self.read_two_bytecodes();
                     self.current_frame().ip -= offset as usize;
                 }
+                Call => {
+                    let arg_count = self.read_one_bytecode();
+                    if !self.call_value(self.peek(arg_count as usize), arg_count) {
+                        return Err(InterpretError::RuntimeError);
+                    }
+                }
                 Return => {
-                    return Ok(());
+                    let result = self.stack.pop().unwrap();
+                    let frame = self.frames.pop().unwrap();
+                    if self.frames.len() == 0 {
+                        self.stack.pop();
+                        return Ok(());
+                    }
+                    self.stack.truncate(frame.base_slot);
+                    self.stack.push(result);
                 }
                 Constant => {
                     let constant = self.read_one_constant();
@@ -215,12 +230,68 @@ impl VirtualMachine {
         self.stack[stack_top_index - distance].clone()
     }
 
+    fn call_value(&mut self, callee: Value, arg_count: u8) -> bool {
+        use Value::*;
+        match callee {
+            Function(function) => return self.call(function.clone(), arg_count),
+            NativeFunction(function) => {
+                let stack_top = self.stack.len();
+                let result = function.call(
+                    arg_count as usize,
+                    &self.stack[stack_top - arg_count as usize..stack_top],
+                );
+                self.stack.truncate(stack_top - (arg_count + 1) as usize);
+                self.stack.push(result);
+                return true;
+            }
+            _ => (),
+        }
+        let _ = self.runtime_error("Can only call functions and classes.");
+        false
+    }
+
+    fn define_native(&mut self, name: &str, function: Rc<dyn NativeFunction>) {
+        self.globals
+            .insert(name.to_string(), Value::NativeFunction(function.clone()));
+    }
+
+    fn call(&mut self, function: Rc<Function>, arg_count: u8) -> bool {
+        if arg_count as usize != function.arity {
+            let _ = self.runtime_error(&format!(
+                "Expected {} arguments but got {}.",
+                function.arity, arg_count
+            ));
+            return false;
+        }
+
+        if self.frames.len() == u8::MAX.into() {
+            let _ = self.runtime_error("Stack overflow.");
+            return false;
+        }
+
+        let base_slot = self.stack.len() - arg_count as usize - 1;
+        self.frames.push(CallFrame {
+            function: function.clone(),
+            ip: 0,
+            base_slot,
+        });
+        true
+    }
+
     fn runtime_error(&mut self, message: &str) -> Result<(), InterpretError> {
-        let index = self.current_frame().ip - 1;
-        let line_number = self.current_chunk().line_numbers[index];
         eprintln!("{}", message);
-        eprintln!("[line {line_number}] in script");
+        for frame in self.frames.iter().rev() {
+            let index = frame.ip - 1;
+            let line_number = frame.function.chunk.line_numbers[index];
+            eprint!("[line {}] in ", line_number);
+            if frame.function.name.is_empty() {
+                eprintln!("script");
+            } else {
+                eprintln!("{}()", frame.function.name);
+            }
+        }
         self.stack = Vec::new();
+        self.frames = Vec::new();
         Err(InterpretError::RuntimeError)
     }
 }
