@@ -4,7 +4,7 @@ use super::Compiler;
 
 impl<'a> Compiler<'a> {
     pub fn parse_identifier(&mut self, can_assign: bool) {
-        let name = self.parser.previous.lexeme.to_string();
+        let name = self.parser().previous.lexeme.to_string();
         self.named_identifier(name, can_assign);
     }
 
@@ -34,7 +34,7 @@ impl<'a> Compiler<'a> {
         for (i, local) in self.locals.iter().enumerate().rev() {
             if name == local.name.lexeme {
                 if local.depth.is_none() {
-                    self.parser
+                    self.parser()
                         .error("Can't read local variable in its own initializer.");
                 }
                 return Some(i as u8);

@@ -24,7 +24,7 @@ impl<'a> Compiler<'a> {
         if self.scope_depth > 0 {
             return 0;
         }
-        let name = self.parser.previous.lexeme.clone();
+        let name = self.parser().previous.lexeme.clone();
         self.emit_identifier_constant(name)
     }
 
@@ -40,14 +40,14 @@ impl<'a> Compiler<'a> {
         if self.scope_depth == 0 {
             return;
         }
-        let name = self.parser.previous.clone();
+        let name = self.parser().previous.clone();
         for local in self.locals.iter().rev() {
             if local.depth.is_some() && local.depth.is_some_and(|depth| depth < self.scope_depth) {
                 break;
             }
 
             if name == local.name {
-                self.parser
+                self.parser()
                     .error("Already a variable with this name in this scope.");
             }
         }

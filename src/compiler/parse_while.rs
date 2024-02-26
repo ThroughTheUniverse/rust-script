@@ -21,7 +21,7 @@ impl<'a> Compiler<'a> {
         self.emit_one_byte(OpCode::Loop);
         let offset = self.chunk.bytecodes.len() - loop_start + 2;
         if offset > u16::MAX.into() {
-            self.parser.error("Loop body too large.");
+            self.parser().error("Loop body too large.");
         }
 
         self.emit_one_byte(((offset >> 8) & 0xff) as u8);

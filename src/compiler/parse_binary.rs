@@ -6,8 +6,8 @@ impl<'a> Compiler<'a> {
     pub fn parse_binary(&mut self, _can_assign: bool) {
         use OpCode::*;
         use TokenKind::*;
-        let binary_operator = self.parser.previous.kind;
-        let precedence: u8 = self.rules.get(binary_operator).precedence.into();
+        let binary_operator = self.parser().previous.kind;
+        let precedence: u8 = self.rules().get(binary_operator).precedence.into();
         self.parse_precedence((precedence + 1).into());
 
         match binary_operator {

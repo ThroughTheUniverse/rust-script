@@ -7,7 +7,7 @@ impl<'a> Compiler<'a> {
         use OpCode::*;
         use TokenKind::*;
 
-        let unary_operator = self.parser.previous.kind;
+        let unary_operator = self.parser().previous.kind;
         self.parse_precedence(Precedence::Unary);
         match unary_operator {
             Bang => self.emit_one_byte(Not),

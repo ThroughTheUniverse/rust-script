@@ -9,7 +9,7 @@ impl<'a> Compiler<'a> {
         } else {
             self.parse_statement();
         }
-        if self.parser.is_panic_mode.get() {
+        if self.parser().is_panic_mode.get() {
             self.synchronize();
         }
     }

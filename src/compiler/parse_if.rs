@@ -30,7 +30,7 @@ impl<'a> Compiler<'a> {
         let jump = self.chunk.bytecodes.len() - offset - 2;
 
         if jump > u16::MAX.into() {
-            self.parser.error("Too much code to jump over.");
+            self.parser().error("Too much code to jump over.");
         }
 
         self.chunk.bytecodes[offset] = ((jump >> 8) & 0xff) as u8;
