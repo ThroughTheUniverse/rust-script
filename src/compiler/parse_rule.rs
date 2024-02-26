@@ -213,7 +213,14 @@ impl Rules {
                     Precedence::None,
                 ),
             ),
-            (TokenKind::And, ParseRule::new(None, None, Precedence::And)),
+            (
+                TokenKind::And,
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_and(can_assign)),
+                    Precedence::And,
+                ),
+            ),
             (
                 TokenKind::Struct,
                 ParseRule::new(None, None, Precedence::None),
@@ -241,7 +248,14 @@ impl Rules {
                     Precedence::None,
                 ),
             ),
-            (TokenKind::Or, ParseRule::new(None, None, Precedence::Or)),
+            (
+                TokenKind::Or,
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_or(can_assign)),
+                    Precedence::Or,
+                ),
+            ),
             (
                 TokenKind::Print,
                 ParseRule::new(None, None, Precedence::None),

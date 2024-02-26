@@ -14,21 +14,26 @@ use self::{
 };
 
 mod locals;
+mod parse_and;
 mod parse_binary;
 mod parse_block;
 mod parse_declaration;
 mod parse_expression;
 mod parse_expression_statement;
+mod parse_for;
 mod parse_grouping;
 mod parse_identifier;
+mod parse_if;
 mod parse_let;
 mod parse_literal;
 mod parse_number;
+mod parse_or;
 mod parse_print;
 mod parse_rule;
 mod parse_statement;
 mod parse_string;
 mod parse_unary;
+mod parse_while;
 mod parser;
 
 pub enum InterpretError {

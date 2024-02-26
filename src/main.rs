@@ -28,11 +28,11 @@ fn main() {
     // }
     vm.interpret(
         r#"
-        let a = 1;
-        {
-            let b = 2;
-            print(a+b);
-        }"#,
+        let a = 10;
+        for (; a != 0 ; a = a - 1) {
+            print(a);
+        }
+        "#,
     );
 }
 

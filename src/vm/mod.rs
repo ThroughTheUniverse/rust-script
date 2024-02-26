@@ -53,6 +53,20 @@ impl VirtualMachine {
                 Print => {
                     println!("{}", self.stack.pop().unwrap());
                 }
+                Jump => {
+                    let offset = self.read_two_bytecodes();
+                    self.instruction_pointer += offset as usize;
+                }
+                JumpIfFalse => {
+                    let offset = self.read_two_bytecodes();
+                    if self.peek(0).is_falsey() {
+                        self.instruction_pointer += offset as usize;
+                    }
+                }
+                Loop => {
+                    let offset = self.read_two_bytecodes();
+                    self.instruction_pointer -= offset as usize;
+                }
                 Return => {
                     return Ok(());
                 }
@@ -136,6 +150,13 @@ impl VirtualMachine {
         let bytecode = self.chunk.bytecodes[self.instruction_pointer];
         self.instruction_pointer += 1;
         bytecode
+    }
+
+    fn read_two_bytecodes(&mut self) -> u16 {
+        self.instruction_pointer += 2;
+        let high_byte = self.chunk.bytecodes[self.instruction_pointer - 2];
+        let low_byte = self.chunk.bytecodes[self.instruction_pointer - 1];
+        ((high_byte as u16) << 8) | low_byte as u16
     }
 
     fn read_one_constant(&mut self) -> Value {
