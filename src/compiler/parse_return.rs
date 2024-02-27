@@ -11,6 +11,10 @@ impl Compiler {
         if self.matches(TokenKind::Semicolon) {
             self.emit_return();
         } else {
+            if self.kind == FunctionKind::Initializer {
+                self.parser()
+                    .error("Can't return a value from an initializer.");
+            }
             self.parse_expression();
             self.consume(TokenKind::Semicolon, "Expect ';' after return value.");
             self.emit_one_byte(OpCode::Return);

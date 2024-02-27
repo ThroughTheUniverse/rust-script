@@ -40,6 +40,7 @@ mod parse_or;
 mod parse_print;
 mod parse_return;
 mod parse_rule;
+mod parse_self;
 mod parse_statement;
 mod parse_string;
 mod parse_struct;
@@ -55,7 +56,23 @@ pub enum InterpretError {
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum FunctionKind {
     Function,
+    Method,
     Script,
+    Initializer,
+}
+
+pub struct ClassCompiler {
+    pub enclosing: RefCell<Option<Rc<ClassCompiler>>>,
+    pub has_superclass: RefCell<bool>,
+}
+
+impl ClassCompiler {
+    pub fn new() -> Self {
+        Self {
+            enclosing: RefCell::new(None),
+            has_superclass: RefCell::new(false),
+        }
+    }
 }
 
 pub struct Compiler {
@@ -94,6 +111,11 @@ impl Compiler {
             let name = result.parser().previous.lexeme.clone();
             result.function.name = name;
         }
+        if kind != FunctionKind::Function {
+            result.locals[0].name.lexeme = "self".to_string();
+        } else {
+            result.locals[0].name.lexeme = "".to_string();
+        }
 
         result
     }
@@ -122,6 +144,11 @@ impl Compiler {
         if kind != FunctionKind::Script {
             let name = result.parser().previous.lexeme.clone();
             result.function.name = name;
+        }
+        if kind != FunctionKind::Function {
+            result.locals[0].name.lexeme = "self".to_string();
+        } else {
+            result.locals[0].name.lexeme = "".to_string();
         }
 
         result
@@ -202,7 +229,11 @@ impl Compiler {
     }
 
     fn emit_return(&mut self) {
-        self.emit_one_byte(OpCode::None);
+        if self.kind == FunctionKind::Initializer {
+            self.emit_two_bytes(OpCode::GetLocal, 0);
+        } else {
+            self.emit_one_byte(OpCode::None);
+        }
         self.emit_one_byte(OpCode::Return);
     }
 

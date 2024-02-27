@@ -159,14 +159,13 @@ impl VirtualMachine {
                 GetProperty => {
                     if let Value::Instance(instance) = self.peek(0) {
                         if let Value::String(s) = self.read_one_constant() {
-                            println!("{s} constant");
                             if let Some(value) = instance.fields.borrow().get(&s) {
                                 self.stack.pop();
                                 self.stack.push(value.clone());
-                            }
-
-                            if !self.bind_method(instance.r#struct.clone(), &s) {
-                                return Err(InterpretError::RuntimeError);
+                            } else {
+                                if !self.bind_method(instance.r#struct.clone(), &s) {
+                                    return Err(InterpretError::RuntimeError);
+                                }
                             }
                         }
                     } else {
@@ -294,9 +293,20 @@ impl VirtualMachine {
                 let index = self.stack.len() - arg_count as usize - 1;
                 let new_instance = InstanceObject::new(class.clone());
                 self.stack[index] = Value::Instance(Rc::new(new_instance));
+                if let Some(initializer) = class.methods.borrow().get("new") {
+                    self.call(initializer.clone(), arg_count);
+                } else if arg_count != 0 {
+                    let _ =
+                        self.runtime_error(&format!("Expected 0 arguments but got {}.", arg_count));
+                    return false;
+                }
                 return true;
             }
-            BoundMethod(bound) => return self.call(bound.method.clone(), arg_count),
+            BoundMethod(bound) => {
+                let index = self.stack.len() - arg_count as usize - 1;
+                self.stack[index] = bound.receiver.clone();
+                return self.call(bound.method.clone(), arg_count);
+            }
             Function(function) => return self.call(function.clone(), arg_count),
             NativeFunction(function) => {
                 let stack_top = self.stack.len();

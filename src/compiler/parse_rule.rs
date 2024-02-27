@@ -277,7 +277,11 @@ impl Rules {
             ),
             (
                 TokenKind::Self_,
-                ParseRule::new(None, None, Precedence::None),
+                ParseRule::new(
+                    Some(|c, can_assign| c.parse_self(can_assign)),
+                    None,
+                    Precedence::None,
+                ),
             ),
             (
                 TokenKind::True,

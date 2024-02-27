@@ -28,14 +28,21 @@ fn main() {
     // }
     let _ = vm.interpret(
         r#"
-        struct Scone {
-  topping(first, second) {
-    print "scone with " + first + " and " + second;
+        struct CoffeeMaker {
+  new(coffee) {
+    self.coffee = coffee;
+  }
+
+  brew() {
+    print "Enjoy your cup of " + self.coffee;
+
+    // No reusing the grounds!
+    self.coffee = none;
   }
 }
 
-let scone = Scone();
-scone.topping("berries", "cream");
+let maker = CoffeeMaker("coffee and chicory");
+maker.brew();
         "#,
     );
 }
