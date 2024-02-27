@@ -28,21 +28,16 @@ fn main() {
     // }
     let _ = vm.interpret(
         r#"
-        struct CoffeeMaker {
-  new(coffee) {
-    self.coffee = coffee;
-  }
-
-  brew() {
-    print "Enjoy your cup of " + self.coffee;
-
-    // No reusing the grounds!
-    self.coffee = none;
-  }
-}
-
-let maker = CoffeeMaker("coffee and chicory");
-maker.brew();
+        struct Oops {
+            new() {
+                fn f() {
+                    print "not a method";
+                }
+                self.field = f;
+            }
+        }
+        let oops = Oops();
+        oops.field();
         "#,
     );
 }

@@ -184,6 +184,14 @@ impl VirtualMachine {
                         return self.runtime_error("Only instances have fields.");
                     }
                 }
+                Invoke => {
+                    if let Value::String(method) = self.read_one_constant() {
+                        let arg_count = self.read_one_bytecode();
+                        if !self.invoke(&method, arg_count as usize) {
+                            return Err(InterpretError::RuntimeError);
+                        }
+                    }
+                }
                 Method => {
                     if let Value::String(name) = self.read_one_constant() {
                         self.define_method(name);
@@ -227,10 +235,38 @@ impl VirtualMachine {
             let bound = BoundMethod::new(receiver, method.clone());
             self.stack.pop();
             self.stack.push(Value::BoundMethod(Rc::new(bound)));
-            return true;
+            true
         } else {
             let _ = self.runtime_error(&format!("Undefined property '{}'.", name));
-            return false;
+            false
+        }
+    }
+
+    fn invoke(&mut self, name: &str, arg_count: usize) -> bool {
+        if let Value::Instance(instance) = self.peek(arg_count) {
+            if let Some(value) = instance.fields.borrow().get(name) {
+                let index = self.stack.len() - arg_count as usize - 1;
+                self.stack[index] = value.clone();
+                return self.call_value(value.clone(), arg_count as u8);
+            }
+            self.invoke_from_struct(instance.r#struct.clone(), name, arg_count)
+        } else {
+            let _ = self.runtime_error("Only instances have methods.");
+            false
+        }
+    }
+
+    fn invoke_from_struct(
+        &mut self,
+        structt: Rc<StructObject>,
+        name: &str,
+        arg_count: usize,
+    ) -> bool {
+        if let Some(method) = structt.methods.borrow().get(name) {
+            self.call(method.clone(), arg_count as u8)
+        } else {
+            let _ = self.runtime_error(&format!("Undefined property '{}'.", name));
+            false
         }
     }
 

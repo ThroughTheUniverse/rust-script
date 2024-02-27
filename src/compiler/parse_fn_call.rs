@@ -8,7 +8,7 @@ impl Compiler {
         self.emit_two_bytes(OpCode::Call, arg_count);
     }
 
-    fn argument_list(&mut self) -> u8 {
+    pub fn argument_list(&mut self) -> u8 {
         let mut arg_count = 0;
         if !self.check(TokenKind::RightParen) {
             loop {

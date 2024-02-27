@@ -81,6 +81,7 @@ pub struct Compiler {
     function: Function,
     kind: FunctionKind,
     rules: Rc<Rules>,
+    current_class: Rc<RefCell<Option<Rc<ClassCompiler>>>>,
     pub locals: Vec<Local>,
     pub scope_depth: usize,
 }
@@ -92,6 +93,7 @@ impl Compiler {
             scanner: Rc::new(RefCell::new(Scanner::new(""))),
             rules: Rc::new(Rules::new()),
             function: Function::new(),
+            current_class: Rc::new(RefCell::new(None)),
             kind,
             locals: {
                 let mut locals = Vec::new();
@@ -127,6 +129,7 @@ impl Compiler {
             rules: self.rules.clone(),
             function: Function::new(),
             kind,
+            current_class: self.current_class.clone(),
             locals: {
                 let mut locals = Vec::new();
                 locals.push(Local::new(
