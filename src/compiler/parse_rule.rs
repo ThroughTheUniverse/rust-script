@@ -92,7 +92,14 @@ impl Rules {
                 TokenKind::Comma,
                 ParseRule::new(None, None, Precedence::None),
             ),
-            (TokenKind::Dot, ParseRule::new(None, None, Precedence::Call)),
+            (
+                TokenKind::Dot,
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_dot(can_assign)),
+                    Precedence::Call,
+                ),
+            ),
             (
                 TokenKind::Minus,
                 ParseRule::new(

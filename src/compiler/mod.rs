@@ -24,6 +24,7 @@ mod parse_and;
 mod parse_binary;
 mod parse_block;
 mod parse_declaration;
+mod parse_dot;
 mod parse_expression;
 mod parse_expression_statement;
 mod parse_fn;
@@ -41,6 +42,7 @@ mod parse_return;
 mod parse_rule;
 mod parse_statement;
 mod parse_string;
+mod parse_struct;
 mod parse_unary;
 mod parse_while;
 mod parser;
@@ -206,6 +208,9 @@ impl Compiler {
 
     fn end_complier(mut self) -> Function {
         self.emit_return();
+        if !self.parser().had_error.get() {
+            self.current_chunk().disassemble_chunk("<script>");
+        }
         self.function
     }
 

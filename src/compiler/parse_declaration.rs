@@ -6,6 +6,8 @@ impl Compiler {
     pub fn parse_declaration(&mut self) {
         if self.matches(TokenKind::Fn) {
             self.parse_fn();
+        } else if self.matches(TokenKind::Struct) {
+            self.parse_struct();
         } else if self.matches(TokenKind::Let) {
             self.parse_let();
         } else {

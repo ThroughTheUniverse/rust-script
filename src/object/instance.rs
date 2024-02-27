@@ -1,14 +1,14 @@
-use super::r#struct::Struct;
+use super::r#struct::StructObject;
 use crate::value::Value;
 use std::{cell::RefCell, collections::HashMap, fmt::Display, rc::Rc};
 
-pub struct Instance {
-    r#struct: Rc<Struct>,
-    fields: RefCell<HashMap<String, Value>>,
+pub struct InstanceObject {
+    pub r#struct: Rc<StructObject>,
+    pub fields: RefCell<HashMap<String, Value>>,
 }
 
-impl Instance {
-    pub fn new(r#struct: Rc<Struct>) -> Self {
+impl InstanceObject {
+    pub fn new(r#struct: Rc<StructObject>) -> Self {
         Self {
             r#struct: Rc::clone(&r#struct),
             fields: RefCell::new(HashMap::new()),
@@ -16,7 +16,7 @@ impl Instance {
     }
 }
 
-impl Display for Instance {
+impl Display for InstanceObject {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} instance", self.r#struct)
     }

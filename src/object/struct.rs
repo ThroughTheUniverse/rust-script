@@ -1,14 +1,14 @@
 use std::{cell::RefCell, collections::HashMap, fmt::Display, rc::Rc};
 
-use super::closure::Closure;
+use super::{closure::Closure, function::Function};
 
-pub struct Struct {
-    name: String,
-    methods: RefCell<HashMap<String, Rc<Closure>>>,
-    init: RefCell<Option<Rc<Closure>>>,
+pub struct StructObject {
+    pub name: String,
+    pub methods: RefCell<HashMap<String, Rc<Function>>>,
+    pub init: RefCell<Option<Rc<Function>>>,
 }
 
-impl Struct {
+impl StructObject {
     pub fn new(name: String) -> Self {
         Self {
             name,
@@ -18,7 +18,7 @@ impl Struct {
     }
 }
 
-impl Display for Struct {
+impl Display for StructObject {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name)
     }

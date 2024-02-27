@@ -1,6 +1,6 @@
 use crate::object::{
-    bound_method::BoundMethod, closure::Closure, function::Function, instance::Instance,
-    native_function::NativeFunction, r#struct::Struct,
+    bound_method::BoundMethod, closure::Closure, function::Function, instance::InstanceObject,
+    native_function::NativeFunction, r#struct::StructObject,
 };
 use std::{
     any::Any,
@@ -18,8 +18,8 @@ pub enum Value {
     Function(Rc<Function>),
     NativeFunction(Rc<dyn NativeFunction>),
     Closure(Rc<Closure>),
-    Struct(Rc<Struct>),
-    Instance(Rc<Instance>),
+    Struct(Rc<StructObject>),
+    Instance(Rc<InstanceObject>),
     BoundMethod(Rc<BoundMethod>),
 }
 

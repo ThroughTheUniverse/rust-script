@@ -1,11 +1,14 @@
-use std::{collections::HashMap, rc::Rc, result};
+use std::{borrow::BorrowMut, collections::HashMap, rc::Rc, result};
 
 use crate::{
     chunk::{opcode::OpCode, Chunk},
     compiler::{Compiler, FunctionKind, InterpretError},
     object::{
+        bound_method::BoundMethod,
         function::{self, Function},
+        instance::InstanceObject,
         native_function::{Clock, NativeFunction},
+        r#struct::StructObject,
     },
     value::Value,
 };
@@ -54,11 +57,12 @@ impl VirtualMachine {
             //     print!("          ");
             //     self.stack.iter().for_each(|value| {
             //         print!("[ ");
-            //         println!("{value}");
+            //         print!("{value}");
             //         print!(" ]");
             //     });
             //     println!();
-            //     self.chunk.disassemble_instruction(self.instruction_pointer);
+            //     let ip = self.current_frame().ip;
+            //     self.current_chunk().disassemble_instruction(ip);
             // }
 
             let instruction: OpCode = self.read_one_bytecode().into();
@@ -106,6 +110,12 @@ impl VirtualMachine {
                 Pop => {
                     self.stack.pop();
                 }
+                Struct => {
+                    if let Value::String(s) = self.read_one_constant() {
+                        let new_struct = StructObject::new(s);
+                        self.stack.push(Value::Struct(Rc::new(new_struct)));
+                    }
+                }
                 GetLocal => {
                     let slot = self.read_one_bytecode();
                     let index = self.current_frame().base_slot + slot as usize;
@@ -146,6 +156,40 @@ impl VirtualMachine {
                         return self.runtime_error("No identifier name");
                     }
                 }
+                GetProperty => {
+                    if let Value::Instance(instance) = self.peek(0) {
+                        if let Value::String(s) = self.read_one_constant() {
+                            println!("{s} constant");
+                            if let Some(value) = instance.fields.borrow().get(&s) {
+                                self.stack.pop();
+                                self.stack.push(value.clone());
+                            }
+
+                            if !self.bind_method(instance.r#struct.clone(), &s) {
+                                return Err(InterpretError::RuntimeError);
+                            }
+                        }
+                    } else {
+                        return self.runtime_error("Only instances have properties.");
+                    }
+                }
+                SetProperty => {
+                    if let Value::Instance(instance) = self.peek(1) {
+                        if let Value::String(name) = self.read_one_constant() {
+                            instance.fields.borrow_mut().insert(name, self.peek(0));
+                            let value = self.stack.pop().unwrap();
+                            self.stack.pop();
+                            self.stack.push(value);
+                        }
+                    } else {
+                        return self.runtime_error("Only instances have fields.");
+                    }
+                }
+                Method => {
+                    if let Value::String(name) = self.read_one_constant() {
+                        self.define_method(name);
+                    }
+                }
                 Equal => {
                     let b = self.stack.pop().unwrap();
                     let a = self.stack.pop().unwrap();
@@ -176,6 +220,19 @@ impl VirtualMachine {
 
     fn current_chunk(&mut self) -> &Chunk {
         &self.current_frame().function.chunk
+    }
+
+    fn bind_method(&mut self, structt: Rc<StructObject>, name: &str) -> bool {
+        if let Some(method) = structt.methods.borrow().get(name) {
+            let receiver = self.peek(0);
+            let bound = BoundMethod::new(receiver, method.clone());
+            self.stack.pop();
+            self.stack.push(Value::BoundMethod(Rc::new(bound)));
+            return true;
+        } else {
+            let _ = self.runtime_error(&format!("Undefined property '{}'.", name));
+            return false;
+        }
     }
 
     fn read_one_bytecode(&mut self) -> u8 {
@@ -233,6 +290,13 @@ impl VirtualMachine {
     fn call_value(&mut self, callee: Value, arg_count: u8) -> bool {
         use Value::*;
         match callee {
+            Struct(class) => {
+                let index = self.stack.len() - arg_count as usize - 1;
+                let new_instance = InstanceObject::new(class.clone());
+                self.stack[index] = Value::Instance(Rc::new(new_instance));
+                return true;
+            }
+            BoundMethod(bound) => return self.call(bound.method.clone(), arg_count),
             Function(function) => return self.call(function.clone(), arg_count),
             NativeFunction(function) => {
                 let stack_top = self.stack.len();
@@ -248,6 +312,18 @@ impl VirtualMachine {
         }
         let _ = self.runtime_error("Can only call functions and classes.");
         false
+    }
+
+    fn define_method(&mut self, name: String) {
+        if let Value::Function(method) = self.peek(0) {
+            if let Value::Struct(structt) = self.peek(1) {
+                structt
+                    .methods
+                    .borrow_mut()
+                    .insert(name.to_string(), method);
+                self.stack.pop();
+            }
+        }
     }
 
     fn define_native(&mut self, name: &str, function: Rc<dyn NativeFunction>) {

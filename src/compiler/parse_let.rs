@@ -36,7 +36,7 @@ impl Compiler {
         self.emit_two_bytes(OpCode::DefineGlobal, global);
     }
 
-    fn declare_variable(&mut self) {
+    pub fn declare_variable(&mut self) {
         if self.scope_depth == 0 {
             return;
         }

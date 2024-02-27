@@ -28,18 +28,14 @@ fn main() {
     // }
     let _ = vm.interpret(
         r#"
-        fn fib(n) {
-  if (n < 2) return n;
-  return fib(n - 2) + fib(n - 1);
+        struct Scone {
+  topping(first, second) {
+    print "scone with " + first + " and " + second;
+  }
 }
 
-let start = clock();
-print fib(35);
-print clock() - start;
-start = time.time()
-print(Fibonacci(35))
-end = time.time()
-print(end - start)
+let scone = Scone();
+scone.topping("berries", "cream");
         "#,
     );
 }

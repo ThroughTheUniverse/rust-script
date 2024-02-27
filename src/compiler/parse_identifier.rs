@@ -8,7 +8,7 @@ impl Compiler {
         self.named_identifier(name, can_assign);
     }
 
-    fn named_identifier(&mut self, name: String, can_assign: bool) {
+    pub fn named_identifier(&mut self, name: String, can_assign: bool) {
         let get_opcode: OpCode;
         let set_opcode: OpCode;
         let mut arg = self.resolve_local(&name);
