@@ -10,7 +10,6 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Clone)]
 pub enum Value {
     None,
     Bool(bool),
@@ -38,6 +37,24 @@ impl Display for Value {
             Struct(r#struct) => write!(f, "{}", r#struct),
             Instance(instance) => write!(f, "{}", instance),
             BoundMethod(bound_method) => write!(f, "{}", bound_method),
+        }
+    }
+}
+
+impl Clone for Value {
+    fn clone(&self) -> Self {
+        use Value::*;
+        match self {
+            None => None,
+            Bool(b) => Bool(*b),
+            Number(n) => Number(*n),
+            String(s) => String(s.clone()),
+            Function(f) => Function(Rc::clone(f)),
+            NativeFunction(n) => NativeFunction(Rc::clone(n)),
+            Closure(c) => Closure(Rc::clone(c)),
+            Struct(c) => Struct(Rc::clone(c)),
+            Instance(i) => Instance(Rc::clone(i)),
+            BoundMethod(b) => BoundMethod(Rc::clone(b)),
         }
     }
 }

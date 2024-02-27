@@ -34,8 +34,12 @@ fn main() {
 }
 
 let start = clock();
-print fib(30);
+print fib(35);
 print clock() - start;
+start = time.time()
+print(Fibonacci(35))
+end = time.time()
+print(end - start)
         "#,
     );
 }
