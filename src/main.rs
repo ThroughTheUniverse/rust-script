@@ -26,29 +26,9 @@ fn main() {
     // }
     let _ = vm.interpret(
         r#"
-        struct Point {
-            new() {
-                self.x = 0;
-                self.y = 0;
-            }
-
-            printf() {
-                print("( ");
-                print(self.x);
-                print(", ");
-                print(self.y);
-                print(" )");
-            }
-        }
-        struct Origin {
-            new() {
-                self.point = Point();
-                self.shape = "red";
-            }
-        }
-        let a = Origin();
-        a.point.printf();
-        print(a.shape);
+        let 在 = 1;
+        let b = String(在);
+        println("{}", b + "1");
         "#,
     );
 }

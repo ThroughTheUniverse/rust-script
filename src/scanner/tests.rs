@@ -464,13 +464,13 @@ fn test_self() {
 
 #[test]
 fn test_true() {
-    let mut scanner = Scanner::new("true");
+    let mut scanner = Scanner::new("\n\ntrue");
     let token = scanner.scan_token();
     assert_eq!(
         Token {
             kind: True,
             lexeme: "true".to_string(),
-            line_number: 1
+            line_number: 3
         },
         token
     );

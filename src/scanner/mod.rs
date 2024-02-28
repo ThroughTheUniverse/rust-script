@@ -146,12 +146,12 @@ impl Scanner {
     fn skip_whitespace(&mut self) {
         loop {
             let c = self.peek();
-            if c.is_whitespace() {
+            if c == '\n' {
+                self.line_number += 1;
                 self.advance();
                 continue;
             }
-            if c == '\n' {
-                self.line_number += 1;
+            if c.is_whitespace() {
                 self.advance();
                 continue;
             }

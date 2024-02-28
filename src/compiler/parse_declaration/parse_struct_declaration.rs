@@ -46,8 +46,10 @@ impl Compiler {
 
     fn parse_method(&mut self) {
         use FunctionKind::*;
+        use TokenKind::*;
 
-        self.consume(TokenKind::Identifier, "Expect method name.");
+        self.consume(Fn, "Expect fn keyword.");
+        self.consume(Identifier, "Expect method name.");
         let name = self.parser().previous.lexeme.clone();
         let constant = self.emit_identifier_constant(name);
         let mut kind = Method;

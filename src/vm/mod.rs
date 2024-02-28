@@ -5,7 +5,9 @@ use crate::{
         bound_method_object::BoundMethodObject,
         function_object::FunctionObject,
         instance_object::InstanceObject,
-        native_function_object::{Clock, NativeFunctionObject},
+        native_function_object::{
+            Clock, ConvertToNumber, ConvertToString, NativeFunctionObject, Println,
+        },
         struct_object::StructObject,
     },
     value::Value,
@@ -32,7 +34,13 @@ impl VirtualMachine {
             globals: HashMap::new(),
         };
         let clock = Rc::new(Clock {});
+        let println = Rc::new(Println {});
+        let convert_to_string = Rc::new(ConvertToString {});
+        let convert_to_number = Rc::new(ConvertToNumber {});
         result.define_native("clock", clock.clone());
+        result.define_native("println", println.clone());
+        result.define_native("String", convert_to_string.clone());
+        result.define_native("Number", convert_to_number.clone());
         result
     }
 
