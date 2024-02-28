@@ -115,6 +115,22 @@ impl Rules {
                 ),
             ),
             (
+                TokenKind::Modulo,
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary_expression(can_assign)),
+                    Precedence::Factor,
+                ),
+            ),
+            (
+                TokenKind::Power,
+                ParseRule::new(
+                    None,
+                    Some(|c, can_assign| c.parse_binary_expression(can_assign)),
+                    Precedence::Factor,
+                ),
+            ),
+            (
                 TokenKind::Semicolon,
                 ParseRule::new(None, None, Precedence::None),
             ),

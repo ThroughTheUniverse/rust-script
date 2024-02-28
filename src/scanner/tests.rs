@@ -477,6 +477,62 @@ fn test_true() {
 }
 
 #[test]
+fn test_continue() {
+    let mut scanner = Scanner::new("continue");
+    let token = scanner.scan_token();
+    assert_eq!(
+        Token {
+            kind: Continue,
+            lexeme: "continue".to_string(),
+            line_number: 1
+        },
+        token
+    );
+}
+
+#[test]
+fn test_mod() {
+    let mut scanner = Scanner::new("%");
+    let token = scanner.scan_token();
+    assert_eq!(
+        Token {
+            kind: Modulo,
+            lexeme: "%".to_string(),
+            line_number: 1
+        },
+        token
+    );
+}
+
+#[test]
+fn test_power() {
+    let mut scanner = Scanner::new("^");
+    let token = scanner.scan_token();
+    assert_eq!(
+        Token {
+            kind: Power,
+            lexeme: "^".to_string(),
+            line_number: 1
+        },
+        token
+    );
+}
+
+#[test]
+fn test_loop() {
+    let mut scanner = Scanner::new("loop");
+    let token = scanner.scan_token();
+    assert_eq!(
+        Token {
+            kind: Loop,
+            lexeme: "loop".to_string(),
+            line_number: 1
+        },
+        token
+    );
+}
+
+#[test]
 fn test_let() {
     let mut scanner = Scanner::new("let");
     let token = scanner.scan_token();

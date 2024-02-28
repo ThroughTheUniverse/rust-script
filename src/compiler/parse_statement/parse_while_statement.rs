@@ -7,6 +7,7 @@ impl Compiler {
         use TokenKind::*;
 
         let loop_start = self.current_chunk().bytecodes.len();
+        self.loop_start = loop_start;
         self.consume(LeftParen, "Expect '(' after 'while'.");
         self.parse_expression();
         self.consume(RightParen, "Expect ')' after condition.");

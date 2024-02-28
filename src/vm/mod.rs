@@ -215,6 +215,8 @@ impl VirtualMachine {
                 Subtract => self.binary_operator(Subtract)?,
                 Multiply => self.binary_operator(Multiply)?,
                 Divide => self.binary_operator(Divide)?,
+                Modulo => self.binary_operator(Modulo)?,
+                Power => self.binary_operator(Power)?,
                 Not => {
                     let value = self.stack.pop().unwrap().is_falsey();
                     self.stack.push(Value::Bool(value));
@@ -315,6 +317,8 @@ impl VirtualMachine {
                 Divide => a / b,
                 Greater => Value::Bool(a > b),
                 Less => Value::Bool(a < b),
+                Modulo => a.modulo(b),
+                Power => a.power(b),
                 _ => return Err(InterpretError::RuntimeError),
             };
             self.stack.push(result);

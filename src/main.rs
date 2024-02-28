@@ -26,9 +26,8 @@ fn main() {
     // }
     let _ = vm.interpret(
         r#"
-        let 在 = 1;
-        let b = String(在);
-        println("{}", b + "1");
+        let a = 4 ^ 2;
+        print(a);
         "#,
     );
 }

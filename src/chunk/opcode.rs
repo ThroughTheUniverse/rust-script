@@ -31,6 +31,8 @@ pub enum OpCode {
     Return,
     Struct,
     Method,
+    Modulo,
+    Power,
     Unknown,
 }
 
@@ -68,6 +70,8 @@ impl From<u8> for OpCode {
             27 => Return,
             28 => Struct,
             29 => Method,
+            30 => Modulo,
+            31 => Power,
             _ => Unknown,
         }
     }
@@ -113,6 +117,8 @@ impl Display for OpCode {
             Return => write!(f, "Return"),
             Struct => write!(f, "Struct"),
             Method => write!(f, "Method"),
+            Modulo => write!(f, "Modulo"),
+            Power => write!(f, "Power"),
             Unknown => write!(f, "Unknown"),
         }
     }

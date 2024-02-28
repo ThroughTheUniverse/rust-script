@@ -148,6 +148,22 @@ impl Div for Value {
 }
 
 impl Value {
+    pub fn modulo(self, rhs: Self) -> Self {
+        use Value::*;
+        match (self, rhs) {
+            (Number(a), Number(b)) => Number(a.rem_euclid(b)),
+            _ => panic!("Only number can do modulo"),
+        }
+    }
+
+    pub fn power(self, rhs: Self) -> Self {
+        use Value::*;
+        match (self, rhs) {
+            (Number(a), Number(b)) => Number(a.powf(b)),
+            _ => panic!("Only number can do power"),
+        }
+    }
+
     pub fn is_number(&self) -> bool {
         match self {
             Self::Number(_) => true,

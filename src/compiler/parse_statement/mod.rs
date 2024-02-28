@@ -2,6 +2,7 @@ use super::Compiler;
 use crate::scanner::token::TokenKind;
 
 mod parse_block_statement;
+mod parse_continue_statement;
 mod parse_expression_statement;
 mod parse_for_statement;
 mod parse_if_statement;
@@ -27,6 +28,8 @@ impl Compiler {
             self.begin_scope();
             self.parse_block_statement();
             self.end_scope();
+        } else if self.matches(Continue) {
+            self.parse_continue_statement();
         } else {
             self.parse_expression_statement();
         }

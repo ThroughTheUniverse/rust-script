@@ -21,6 +21,8 @@ impl Compiler {
             Minus => self.emit_one_byte(Subtract),
             Star => self.emit_one_byte(Multiply),
             Slash => self.emit_one_byte(Divide),
+            TokenKind::Modulo => self.emit_one_byte(OpCode::Modulo),
+            TokenKind::Power => self.emit_one_byte(OpCode::Power),
             _ => panic!("binary operator not found"),
         }
     }

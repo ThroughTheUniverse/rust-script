@@ -56,6 +56,8 @@ impl Scanner {
             '+' => self.make_token(Plus),
             '*' => self.make_token(Star),
             '/' => self.make_token(Slash),
+            '%' => self.make_token(Modulo),
+            '^' => self.make_token(Power),
             '!' => {
                 if self.matches('=') {
                     self.make_token(BangEqual)
@@ -184,6 +186,7 @@ impl Scanner {
     fn identifier_type(&self) -> TokenKind {
         match self.source.get(self.start).unwrap() {
             'a' => self.check_keyword(1, 2, "nd", And),
+            'c' => self.check_keyword(1, 7, "ontinue", Continue),
             'e' => self.check_keyword(1, 3, "lse", Else),
             'f' => {
                 if self.current - self.start > 1 {
@@ -198,6 +201,17 @@ impl Scanner {
                 }
             }
             'i' => self.check_keyword(1, 1, "f", If),
+            'l' => {
+                if self.current - self.start > 1 {
+                    match self.source.get(self.start + 1).unwrap() {
+                        'e' => self.check_keyword(2, 1, "t", Let),
+                        'o' => self.check_keyword(2, 2, "op", Loop),
+                        _ => Identifier,
+                    }
+                } else {
+                    Identifier
+                }
+            }
             'n' => self.check_keyword(1, 3, "one", None),
             'o' => self.check_keyword(1, 1, "r", Or),
             'p' => self.check_keyword(1, 4, "rint", Print),
@@ -214,7 +228,6 @@ impl Scanner {
                 }
             }
             't' => self.check_keyword(1, 3, "rue", True),
-            'l' => self.check_keyword(1, 2, "et", Let),
             'w' => self.check_keyword(1, 4, "hile", While),
             _ => Identifier,
         }

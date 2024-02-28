@@ -56,6 +56,8 @@ impl Chunk {
             Subtract => self.simple_instruction(Subtract.to_string().as_str(), offset),
             Multiply => self.simple_instruction(Multiply.to_string().as_str(), offset),
             Divide => self.simple_instruction(Divide.to_string().as_str(), offset),
+            Modulo => self.simple_instruction(Modulo.to_string().as_str(), offset),
+            Power => self.simple_instruction(Power.to_string().as_str(), offset),
             // not
             Not => self.simple_instruction(Not.to_string().as_str(), offset),
             // negate

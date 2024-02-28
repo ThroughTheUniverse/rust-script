@@ -69,6 +69,7 @@ pub struct Compiler {
     current_class: Rc<RefCell<Option<Rc<ClassCompiler>>>>,
     pub locals: Vec<Local>,
     pub scope_depth: usize,
+    loop_start: usize,
 }
 
 impl Compiler {
@@ -80,6 +81,7 @@ impl Compiler {
             function: FunctionObject::new(),
             current_class: Rc::new(RefCell::new(None)),
             kind,
+            loop_start: 0,
             locals: {
                 let mut locals = Vec::new();
                 locals.push(Local::new(
@@ -114,6 +116,7 @@ impl Compiler {
             rules: self.rules.clone(),
             function: FunctionObject::new(),
             kind,
+            loop_start: 0,
             current_class: self.current_class.clone(),
             locals: {
                 let mut locals = Vec::new();
