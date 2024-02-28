@@ -33,6 +33,7 @@ pub enum OpCode {
     Method,
     Modulo,
     Power,
+    End,
     Unknown,
 }
 
@@ -72,6 +73,7 @@ impl From<u8> for OpCode {
             29 => Method,
             30 => Modulo,
             31 => Power,
+            32 => End,
             _ => Unknown,
         }
     }
@@ -119,7 +121,50 @@ impl Display for OpCode {
             Method => write!(f, "Method"),
             Modulo => write!(f, "Modulo"),
             Power => write!(f, "Power"),
+            End => write!(f, "End"),
             Unknown => write!(f, "Unknown"),
+        }
+    }
+}
+
+impl OpCode {
+    pub fn to_offset(&self) -> usize {
+        use OpCode::*;
+        match self {
+            Constant => 2,
+            None => 1,
+            True => 1,
+            False => 1,
+            Pop => 1,
+            GetLocal => 2,
+            SetLocal => 2,
+            GetGlobal => 2,
+            DefineGlobal => 2,
+            SetGlobal => 2,
+            GetProperty => 2,
+            SetProperty => 2,
+            Equal => 1,
+            Greater => 1,
+            Less => 1,
+            Add => 1,
+            Subtract => 1,
+            Multiply => 1,
+            Divide => 1,
+            Not => 1,
+            Negate => 1,
+            Print => 1,
+            Jump => 3,
+            JumpIfFalse => 3,
+            Loop => 3,
+            Call => 2,
+            Invoke => 3,
+            Return => 1,
+            Struct => 2,
+            Method => 2,
+            Modulo => 1,
+            Power => 1,
+            End => 1,
+            Unknown => 1,
         }
     }
 }

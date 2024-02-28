@@ -60,17 +60,18 @@ impl VirtualMachine {
     pub fn run(&mut self) -> Result<(), InterpretError> {
         use OpCode::*;
         loop {
-            // {
-            //     print!("          ");
-            //     self.stack.iter().for_each(|value| {
-            //         print!("[ ");
-            //         print!("{value}");
-            //         print!(" ]");
-            //     });
-            //     println!();
-            //     let ip = self.current_frame().ip;
-            //     self.current_chunk().disassemble_instruction(ip);
-            // }
+            #[cfg(feature = "debug_mode")]
+            {
+                print!("          ");
+                self.stack.iter().for_each(|value| {
+                    print!("[ ");
+                    print!("{value}");
+                    print!(" ]");
+                });
+                println!();
+                let ip = self.current_frame().ip;
+                self.current_chunk().disassemble_instruction(ip);
+            }
 
             let instruction: OpCode = self.read_one_bytecode().into();
             match instruction {

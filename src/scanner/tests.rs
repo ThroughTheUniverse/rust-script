@@ -519,6 +519,20 @@ fn test_power() {
 }
 
 #[test]
+fn test_break() {
+    let mut scanner = Scanner::new("break");
+    let token = scanner.scan_token();
+    assert_eq!(
+        Token {
+            kind: Break,
+            lexeme: "break".to_string(),
+            line_number: 1
+        },
+        token
+    );
+}
+
+#[test]
 fn test_loop() {
     let mut scanner = Scanner::new("loop");
     let token = scanner.scan_token();

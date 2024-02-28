@@ -2,10 +2,12 @@ use super::Compiler;
 use crate::scanner::token::TokenKind;
 
 mod parse_block_statement;
+mod parse_break_statement;
 mod parse_continue_statement;
 mod parse_expression_statement;
 mod parse_for_statement;
 mod parse_if_statement;
+mod parse_loop_statement;
 mod parse_print_statement;
 mod parse_return_statement;
 mod parse_while_statement;
@@ -28,6 +30,10 @@ impl Compiler {
             self.begin_scope();
             self.parse_block_statement();
             self.end_scope();
+        } else if self.matches(Break) {
+            self.parse_break_statement();
+        } else if self.matches(Loop) {
+            self.parse_loop_statement();
         } else if self.matches(Continue) {
             self.parse_continue_statement();
         } else {

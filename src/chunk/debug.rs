@@ -37,6 +37,7 @@ impl Chunk {
             False => self.simple_instruction(False.to_string().as_str(), offset),
             // global variable pop
             Pop => self.simple_instruction(Pop.to_string().as_str(), offset),
+            End => self.simple_instruction(End.to_string().as_str(), offset),
             // local variable
             GetLocal => self.byte_instruction(GetLocal.to_string().as_str(), offset),
             SetLocal => self.byte_instruction(SetLocal.to_string().as_str(), offset),

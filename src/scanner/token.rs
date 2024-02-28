@@ -25,6 +25,7 @@ pub enum TokenKind {
     String,
     Number,
     And,
+    Break,
     Struct,
     Continue,
     Loop,

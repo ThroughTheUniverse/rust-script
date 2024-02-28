@@ -186,6 +186,7 @@ impl Scanner {
     fn identifier_type(&self) -> TokenKind {
         match self.source.get(self.start).unwrap() {
             'a' => self.check_keyword(1, 2, "nd", And),
+            'b' => self.check_keyword(1, 4, "reak", Break),
             'c' => self.check_keyword(1, 7, "ontinue", Continue),
             'e' => self.check_keyword(1, 3, "lse", Else),
             'f' => {

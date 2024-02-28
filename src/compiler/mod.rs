@@ -69,7 +69,8 @@ pub struct Compiler {
     current_class: Rc<RefCell<Option<Rc<ClassCompiler>>>>,
     pub locals: Vec<Local>,
     pub scope_depth: usize,
-    loop_start: usize,
+    loop_start: Option<usize>,
+    loop_depth: usize,
 }
 
 impl Compiler {
@@ -81,7 +82,8 @@ impl Compiler {
             function: FunctionObject::new(),
             current_class: Rc::new(RefCell::new(None)),
             kind,
-            loop_start: 0,
+            loop_start: None,
+            loop_depth: 0,
             locals: {
                 let mut locals = Vec::new();
                 locals.push(Local::new(
@@ -116,7 +118,8 @@ impl Compiler {
             rules: self.rules.clone(),
             function: FunctionObject::new(),
             kind,
-            loop_start: 0,
+            loop_start: None,
+            loop_depth: 0,
             current_class: self.current_class.clone(),
             locals: {
                 let mut locals = Vec::new();
@@ -232,9 +235,12 @@ impl Compiler {
 
     fn end_complier(mut self) -> FunctionObject {
         self.emit_return();
+
+        #[cfg(feature = "debug_mode")]
         if !self.parser().had_error.get() {
             self.current_chunk().disassemble_chunk("<script>");
         }
+
         self.function
     }
 

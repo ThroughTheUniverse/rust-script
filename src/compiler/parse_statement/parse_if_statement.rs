@@ -9,12 +9,15 @@ impl Compiler {
         self.consume(LeftParen, "Expect '(' after 'if'.");
         self.parse_expression();
         self.consume(RightParen, "Expect ')' after condition.");
+
         let then_jump = self.emit_jump(JumpIfFalse);
         self.emit_one_byte(Pop);
         self.parse_statement();
+
         let else_jump = self.emit_jump(Jump);
         self.patch_jump(then_jump);
         self.emit_one_byte(Pop);
+
         if self.matches(Else) {
             self.parse_statement();
         }

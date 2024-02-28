@@ -1,3 +1,4 @@
+#[cfg(feature = "debug_mode")]
 pub mod debug;
 pub mod opcode;
 use crate::value::{ConstantPool, Value};

@@ -198,6 +198,7 @@ impl ConstantPool {
         ConstantPool(Vec::new())
     }
 
+    #[cfg(feature = "debug_mode")]
     pub fn print_nth(&self, index: usize) {
         print!("{}", self.0.get(index).unwrap());
     }
