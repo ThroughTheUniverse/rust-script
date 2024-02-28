@@ -3,7 +3,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl Compiler {
-    pub fn parse_fn_call(&mut self, _can_assign: bool) {
+    pub fn parse_fn_call_expression(&mut self, _can_assign: bool) {
         let arg_count = self.argument_list();
         self.emit_two_bytes(OpCode::Call, arg_count);
     }

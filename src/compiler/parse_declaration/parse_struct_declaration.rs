@@ -1,11 +1,13 @@
 use std::rc::Rc;
 
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
-
-use super::{ClassCompiler, Compiler, FunctionKind};
+use crate::{
+    chunk::opcode::OpCode,
+    compiler::{ClassCompiler, Compiler, FunctionKind},
+    scanner::token::TokenKind,
+};
 
 impl Compiler {
-    pub fn parse_struct(&mut self) {
+    pub fn parse_struct_declaration(&mut self) {
         self.consume(TokenKind::Identifier, "Expect struct name.");
         let struct_name = self.parser().previous.lexeme.clone();
         let name_constant = self.emit_identifier_constant(struct_name.clone());
@@ -23,7 +25,7 @@ impl Compiler {
             .enclosing
             .replace(prev);
 
-        self.named_identifier(struct_name, false);
+        self.parse_named_variable(struct_name, false);
         self.consume(TokenKind::LeftBrace, "Expect '{' before struct body.");
         while !self.check(TokenKind::RightBrace) && !self.check(TokenKind::EOF) {
             self.parse_method();
@@ -49,7 +51,7 @@ impl Compiler {
         if self.parser().previous.lexeme == "new" {
             kind = FunctionKind::Initializer;
         }
-        self.parse_function(kind);
+        self.parse_fn_body(kind);
         self.emit_two_bytes(OpCode::Method, constant);
     }
 }

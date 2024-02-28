@@ -3,7 +3,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl Compiler {
-    pub fn parse_dot(&mut self, can_assign: bool) {
+    pub fn parse_dot_expression(&mut self, can_assign: bool) {
         self.consume(TokenKind::Identifier, "Expect property name after '.'.");
         let name = self.parser().previous.lexeme.clone();
         let name = self.emit_identifier_constant(name);

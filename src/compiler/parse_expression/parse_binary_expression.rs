@@ -3,7 +3,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl Compiler {
-    pub fn parse_binary(&mut self, _can_assign: bool) {
+    pub fn parse_binary_expression(&mut self, _can_assign: bool) {
         use OpCode::*;
         use TokenKind::*;
         let binary_operator = self.parser().previous.kind;

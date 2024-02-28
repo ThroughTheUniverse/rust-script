@@ -1,9 +1,11 @@
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
+use crate::{
+    chunk::opcode::OpCode, compiler::parser::parse_rule::Precedence, scanner::token::TokenKind,
+};
 
-use super::{parse_rule::Precedence, Compiler};
+use super::Compiler;
 
 impl Compiler {
-    pub fn parse_unary(&mut self, _can_assign: bool) {
+    pub fn parse_unary_expression(&mut self, _can_assign: bool) {
         use OpCode::*;
         use TokenKind::*;
 

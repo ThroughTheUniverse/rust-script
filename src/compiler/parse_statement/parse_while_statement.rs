@@ -3,7 +3,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl Compiler {
-    pub fn parse_while(&mut self) {
+    pub fn parse_while_statement(&mut self) {
         let loop_start = self.current_chunk().bytecodes.len();
         self.consume(TokenKind::LeftParen, "Expect '(' after 'while'.");
         self.parse_expression();

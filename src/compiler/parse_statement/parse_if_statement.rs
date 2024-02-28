@@ -3,7 +3,7 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl Compiler {
-    pub fn parse_if(&mut self) {
+    pub fn parse_if_statement(&mut self) {
         self.consume(TokenKind::LeftParen, "Expect '(' after 'if'.");
         self.parse_expression();
         self.consume(TokenKind::RightParen, "Expect ')' after condition.");

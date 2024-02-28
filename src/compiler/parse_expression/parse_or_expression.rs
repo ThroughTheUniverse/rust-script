@@ -1,9 +1,9 @@
-use crate::chunk::opcode::OpCode;
+use crate::{chunk::opcode::OpCode, compiler::parser::parse_rule::Precedence};
 
-use super::{parse_rule::Precedence, Compiler};
+use super::Compiler;
 
 impl Compiler {
-    pub fn parse_or(&mut self, _can_assign: bool) {
+    pub fn parse_or_expression(&mut self, _can_assign: bool) {
         let else_jump = self.emit_jump(OpCode::JumpIfFalse);
         let end_jump = self.emit_jump(OpCode::Jump);
         self.patch_jump(else_jump);

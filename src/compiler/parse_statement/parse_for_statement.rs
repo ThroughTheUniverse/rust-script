@@ -3,13 +3,13 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl Compiler {
-    pub fn parse_for(&mut self) {
+    pub fn parse_for_statement(&mut self) {
         self.begin_scope();
         self.consume(TokenKind::LeftParen, "Expect '(' after 'for'.");
 
         if self.matches(TokenKind::Semicolon) {
         } else if self.matches(TokenKind::Let) {
-            self.parse_let();
+            self.parse_let_declaration();
         } else {
             self.parse_expression_statement();
         }

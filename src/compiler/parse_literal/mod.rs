@@ -2,6 +2,9 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 use super::Compiler;
 
+mod parse_number_literal;
+mod parse_string_literal;
+
 impl Compiler {
     pub fn parser_literal(&mut self, _can_assign: bool) {
         use TokenKind::*;

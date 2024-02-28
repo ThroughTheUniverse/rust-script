@@ -1,18 +1,21 @@
 use std::rc::Rc;
 
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind, value::Value};
-
-use super::{Compiler, FunctionKind};
+use crate::{
+    chunk::opcode::OpCode,
+    compiler::{Compiler, FunctionKind},
+    scanner::token::TokenKind,
+    value::Value,
+};
 
 impl Compiler {
-    pub fn parse_fn(&mut self) {
-        let global = self.parse_variable("Expect function name.");
+    pub fn parse_fn_declaration(&mut self) {
+        let global = self.parse_variable_name("Expect function name.");
         self.mark_initialized();
-        self.parse_function(FunctionKind::Function);
+        self.parse_fn_body(FunctionKind::Function);
         self.define_variable(global);
     }
 
-    pub fn parse_function(&mut self, kind: FunctionKind) {
+    pub fn parse_fn_body(&mut self, kind: FunctionKind) {
         let mut compiler = self.fork(kind);
         compiler.begin_scope();
         compiler.consume(TokenKind::LeftParen, "Expect '(' after function name.");
@@ -24,7 +27,7 @@ impl Compiler {
                         .parser()
                         .error_at_current("Can't have more than 255 parameters.");
                 }
-                let constant = compiler.parse_variable("Expect parameter name.");
+                let constant = compiler.parse_variable_name("Expect parameter name.");
                 compiler.define_variable(constant);
 
                 if !compiler.matches(TokenKind::Comma) {
@@ -34,7 +37,7 @@ impl Compiler {
         }
         compiler.consume(TokenKind::RightParen, "Expect ')' after parameters.");
         compiler.consume(TokenKind::LeftBrace, "Expect '{' before function body.");
-        compiler.parse_block();
+        compiler.parse_block_statement();
         let function = compiler.end_complier();
         let value = self.make_constant(Value::Function(Rc::new(function)));
         self.emit_two_bytes(OpCode::Constant, value)

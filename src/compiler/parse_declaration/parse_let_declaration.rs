@@ -3,8 +3,8 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl Compiler {
-    pub fn parse_let(&mut self) {
-        let global = self.parse_variable("Expect variable name.");
+    pub fn parse_let_declaration(&mut self) {
+        let global = self.parse_variable_name("Expect variable name.");
         if self.matches(TokenKind::Equal) {
             self.parse_expression();
         } else {
@@ -17,7 +17,7 @@ impl Compiler {
         self.define_variable(global);
     }
 
-    pub fn parse_variable(&mut self, error_message: &str) -> u8 {
+    pub fn parse_variable_name(&mut self, error_message: &str) -> u8 {
         self.consume(TokenKind::Identifier, error_message);
 
         self.declare_variable();

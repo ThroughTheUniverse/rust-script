@@ -9,6 +9,8 @@ pub struct Parser {
     pub is_panic_mode: Cell<bool>,
 }
 
+pub mod parse_rule;
+
 impl Parser {
     pub fn new() -> Self {
         Self {

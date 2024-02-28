@@ -1,9 +1,9 @@
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
+use crate::{chunk::opcode::OpCode, compiler::FunctionKind, scanner::token::TokenKind};
 
-use super::{Compiler, FunctionKind};
+use super::Compiler;
 
 impl Compiler {
-    pub fn parse_return(&mut self) {
+    pub fn parse_return_statement(&mut self) {
         if self.kind == FunctionKind::Script {
             self.parser().error("Can't return from top-level code.");
         }

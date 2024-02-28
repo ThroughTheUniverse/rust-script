@@ -3,15 +3,15 @@ use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 use super::Compiler;
 
 impl Compiler {
-    pub fn parse_identifier(&mut self, can_assign: bool) {
+    pub fn parse_variable_expression(&mut self, can_assign: bool) {
         let name = self.parser().previous.lexeme.to_string();
-        self.named_identifier(name, can_assign);
+        self.parse_named_variable(name, can_assign);
     }
 
-    pub fn named_identifier(&mut self, name: String, can_assign: bool) {
+    pub fn parse_named_variable(&mut self, name: String, can_assign: bool) {
         let get_opcode: OpCode;
         let set_opcode: OpCode;
-        let mut arg = self.resolve_local(&name);
+        let mut arg = self.resolve_local_variable(&name);
         if arg.is_some() {
             get_opcode = OpCode::GetLocal;
             set_opcode = OpCode::SetLocal;
@@ -30,7 +30,7 @@ impl Compiler {
         }
     }
 
-    fn resolve_local(&mut self, name: &str) -> Option<u8> {
+    fn resolve_local_variable(&mut self, name: &str) -> Option<u8> {
         for (i, local) in self.locals.iter().enumerate().rev() {
             if name == local.name.lexeme {
                 if local.depth.is_none() {

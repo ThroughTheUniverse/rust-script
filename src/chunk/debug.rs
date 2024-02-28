@@ -18,7 +18,6 @@ impl Chunk {
 
     pub fn disassemble_instruction(&self, offset: usize) -> usize {
         use crate::chunk::opcode::OpCode::*;
-        use crate::value::Value::Function;
         use JumpDirection::*;
 
         print!("{offset:04} ");

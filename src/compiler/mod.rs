@@ -13,39 +13,15 @@ use crate::{
     value::Value,
 };
 
-use self::{
-    locals::Local,
+use self::parser::{
     parse_rule::{Precedence, Rules},
-    parser::Parser,
+    Parser,
 };
 
-mod locals;
-mod parse_and;
-mod parse_binary;
-mod parse_block;
 mod parse_declaration;
-mod parse_dot;
 mod parse_expression;
-mod parse_expression_statement;
-mod parse_fn;
-mod parse_fn_call;
-mod parse_for;
-mod parse_grouping;
-mod parse_identifier;
-mod parse_if;
-mod parse_let;
 mod parse_literal;
-mod parse_number;
-mod parse_or;
-mod parse_print;
-mod parse_return;
-mod parse_rule;
-mod parse_self;
 mod parse_statement;
-mod parse_string;
-mod parse_struct;
-mod parse_unary;
-mod parse_while;
 mod parser;
 
 pub enum InterpretError {
@@ -72,6 +48,17 @@ impl ClassCompiler {
             enclosing: RefCell::new(None),
             has_superclass: RefCell::new(false),
         }
+    }
+}
+
+pub struct Local {
+    pub name: Token,
+    pub depth: Option<usize>,
+}
+
+impl Local {
+    pub fn new(name: Token, depth: Option<usize>) -> Self {
+        Self { name, depth }
     }
 }
 

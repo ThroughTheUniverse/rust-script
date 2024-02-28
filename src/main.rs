@@ -28,16 +28,29 @@ fn main() {
     // }
     let _ = vm.interpret(
         r#"
-        struct Oops {
+        struct Point {
             new() {
-                fn f() {
-                    print "not a method";
-                }
-                self.field = f;
+                self.x = 0;
+                self.y = 0;
+            }
+
+            printf() {
+                print("( ");
+                print(self.x);
+                print(", ");
+                print(self.y);
+                print(" )");
             }
         }
-        let oops = Oops();
-        oops.field();
+        struct Origin {
+            new() {
+                self.point = Point();
+                self.shape = "red";
+            }
+        }
+        let a = Origin();
+        a.point.printf();
+        print(a.shape);
         "#,
     );
 }

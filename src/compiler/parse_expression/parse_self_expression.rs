@@ -6,6 +6,6 @@ impl Compiler {
             self.parser().error("Can't use 'self' outside of a class.");
             return;
         }
-        self.parse_identifier(false);
+        self.parse_variable_expression(false);
     }
 }
