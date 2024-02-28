@@ -1,19 +1,17 @@
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
-
 use super::Compiler;
+use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 impl Compiler {
     pub fn parse_let_declaration(&mut self) {
+        use TokenKind::*;
+
         let global = self.parse_variable_name("Expect variable name.");
-        if self.matches(TokenKind::Equal) {
+        if self.matches(Equal) {
             self.parse_expression();
         } else {
             self.emit_one_byte(OpCode::None);
         }
-        self.consume(
-            TokenKind::Semicolon,
-            "Expect ';' after variable declaration.",
-        );
+        self.consume(Semicolon, "Expect ';' after variable declaration.");
         self.define_variable(global);
     }
 

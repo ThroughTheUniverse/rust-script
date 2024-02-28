@@ -1,14 +1,15 @@
-use std::rc::Rc;
-
 use crate::{
     chunk::opcode::OpCode,
     compiler::{ClassCompiler, Compiler, FunctionKind},
     scanner::token::TokenKind,
 };
+use std::rc::Rc;
 
 impl Compiler {
     pub fn parse_struct_declaration(&mut self) {
-        self.consume(TokenKind::Identifier, "Expect struct name.");
+        use TokenKind::*;
+
+        self.consume(Identifier, "Expect struct name.");
         let struct_name = self.parser().previous.lexeme.clone();
         let name_constant = self.emit_identifier_constant(struct_name.clone());
         self.declare_variable();
@@ -26,11 +27,11 @@ impl Compiler {
             .replace(prev);
 
         self.parse_named_variable(struct_name, false);
-        self.consume(TokenKind::LeftBrace, "Expect '{' before struct body.");
-        while !self.check(TokenKind::RightBrace) && !self.check(TokenKind::EOF) {
+        self.consume(LeftBrace, "Expect '{' before struct body.");
+        while !self.check(RightBrace) && !self.check(EOF) {
             self.parse_method();
         }
-        self.consume(TokenKind::RightBrace, "Expect '}' before struct body.");
+        self.consume(RightBrace, "Expect '}' before struct body.");
         self.emit_one_byte(OpCode::Pop);
 
         let prev = self
@@ -39,17 +40,19 @@ impl Compiler {
             .as_ref()
             .unwrap()
             .enclosing
-            .replace(None);
+            .replace(Option::None);
         self.current_class.replace(prev);
     }
 
     fn parse_method(&mut self) {
+        use FunctionKind::*;
+
         self.consume(TokenKind::Identifier, "Expect method name.");
         let name = self.parser().previous.lexeme.clone();
         let constant = self.emit_identifier_constant(name);
-        let mut kind = FunctionKind::Method;
+        let mut kind = Method;
         if self.parser().previous.lexeme == "new" {
-            kind = FunctionKind::Initializer;
+            kind = Initializer;
         }
         self.parse_fn_body(kind);
         self.emit_two_bytes(OpCode::Method, constant);

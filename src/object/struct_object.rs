@@ -1,11 +1,10 @@
+use super::function_object::FunctionObject;
 use std::{cell::RefCell, collections::HashMap, fmt::Display, rc::Rc};
-
-use super::{closure::Closure, function::Function};
 
 pub struct StructObject {
     pub name: String,
-    pub methods: RefCell<HashMap<String, Rc<Function>>>,
-    pub init: RefCell<Option<Rc<Function>>>,
+    pub methods: RefCell<HashMap<String, Rc<FunctionObject>>>,
+    pub init: RefCell<Option<Rc<FunctionObject>>>,
 }
 
 impl StructObject {

@@ -449,20 +449,6 @@ fn test_return() {
 }
 
 #[test]
-fn test_super() {
-    let mut scanner = Scanner::new("super");
-    let token = scanner.scan_token();
-    assert_eq!(
-        Token {
-            kind: Super,
-            lexeme: "super".to_string(),
-            line_number: 1
-        },
-        token
-    );
-}
-
-#[test]
 fn test_self() {
     let mut scanner = Scanner::new("self");
     let token = scanner.scan_token();

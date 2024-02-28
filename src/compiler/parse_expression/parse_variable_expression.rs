@@ -1,6 +1,5 @@
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
-
 use super::Compiler;
+use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 impl Compiler {
     pub fn parse_variable_expression(&mut self, can_assign: bool) {
@@ -9,17 +8,19 @@ impl Compiler {
     }
 
     pub fn parse_named_variable(&mut self, name: String, can_assign: bool) {
+        use OpCode::*;
+
         let get_opcode: OpCode;
         let set_opcode: OpCode;
         let mut arg = self.resolve_local_variable(&name);
         if arg.is_some() {
-            get_opcode = OpCode::GetLocal;
-            set_opcode = OpCode::SetLocal;
+            get_opcode = GetLocal;
+            set_opcode = SetLocal;
         } else {
             let index = self.emit_identifier_constant(name);
             arg = Some(index);
-            get_opcode = OpCode::GetGlobal;
-            set_opcode = OpCode::SetGlobal;
+            get_opcode = GetGlobal;
+            set_opcode = SetGlobal;
         }
 
         if can_assign && self.matches(TokenKind::Equal) {

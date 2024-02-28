@@ -1,11 +1,12 @@
-use crate::{chunk::opcode::OpCode, compiler::parser::parse_rule::Precedence};
-
 use super::Compiler;
+use crate::{chunk::opcode::OpCode, compiler::parser::parse_rule::Precedence};
 
 impl Compiler {
     pub fn parse_and_expression(&mut self, _can_assign: bool) {
-        let end_jump = self.emit_jump(OpCode::JumpIfFalse);
-        self.emit_one_byte(OpCode::Pop);
+        use OpCode::*;
+
+        let end_jump = self.emit_jump(JumpIfFalse);
+        self.emit_one_byte(Pop);
         self.parse_precedence(Precedence::And);
         self.patch_jump(end_jump);
     }

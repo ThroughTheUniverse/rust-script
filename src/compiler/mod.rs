@@ -1,21 +1,19 @@
-use std::{
-    cell::{RefCell, RefMut},
-    rc::Rc,
+use self::parser::{
+    parse_rule::{Precedence, Rules},
+    Parser,
 };
-
 use crate::{
     chunk::{opcode::OpCode, Chunk},
-    object::function::Function,
+    object::function_object::FunctionObject,
     scanner::{
         token::{Token, TokenKind},
         Scanner,
     },
     value::Value,
 };
-
-use self::parser::{
-    parse_rule::{Precedence, Rules},
-    Parser,
+use std::{
+    cell::{RefCell, RefMut},
+    rc::Rc,
 };
 
 mod parse_declaration;
@@ -65,7 +63,7 @@ impl Local {
 pub struct Compiler {
     parser: Rc<RefCell<Parser>>,
     scanner: Rc<RefCell<Scanner>>,
-    function: Function,
+    function: FunctionObject,
     kind: FunctionKind,
     rules: Rc<Rules>,
     current_class: Rc<RefCell<Option<Rc<ClassCompiler>>>>,
@@ -79,7 +77,7 @@ impl Compiler {
             parser: Rc::new(RefCell::new(Parser::new())),
             scanner: Rc::new(RefCell::new(Scanner::new(""))),
             rules: Rc::new(Rules::new()),
-            function: Function::new(),
+            function: FunctionObject::new(),
             current_class: Rc::new(RefCell::new(None)),
             kind,
             locals: {
@@ -114,7 +112,7 @@ impl Compiler {
             parser: self.parser.clone(),
             scanner: self.scanner.clone(),
             rules: self.rules.clone(),
-            function: Function::new(),
+            function: FunctionObject::new(),
             kind,
             current_class: self.current_class.clone(),
             locals: {
@@ -156,7 +154,7 @@ impl Compiler {
         &self.rules
     }
 
-    pub fn compile(mut self, source: &str) -> Result<Function, InterpretError> {
+    pub fn compile(mut self, source: &str) -> Result<FunctionObject, InterpretError> {
         *self.scanner() = Scanner::new(source);
         self.advance();
         while !self.matches(TokenKind::EOF) {
@@ -219,15 +217,17 @@ impl Compiler {
     }
 
     fn emit_return(&mut self) {
+        use OpCode::*;
+
         if self.kind == FunctionKind::Initializer {
-            self.emit_two_bytes(OpCode::GetLocal, 0);
+            self.emit_two_bytes(GetLocal, 0);
         } else {
-            self.emit_one_byte(OpCode::None);
+            self.emit_one_byte(None);
         }
-        self.emit_one_byte(OpCode::Return);
+        self.emit_one_byte(Return);
     }
 
-    fn end_complier(mut self) -> Function {
+    fn end_complier(mut self) -> FunctionObject {
         self.emit_return();
         if !self.parser().had_error.get() {
             self.current_chunk().disassemble_chunk("<script>");
@@ -295,6 +295,7 @@ impl Compiler {
 
     fn synchronize(&mut self) {
         use TokenKind::*;
+
         self.parser().is_panic_mode.set(false);
 
         while self.parser().current.kind != EOF {
@@ -312,7 +313,7 @@ impl Compiler {
     }
 
     fn add_local(&mut self, name: Token) {
-        if self.locals.len() == u8::MAX as usize {
+        if self.locals.len() == u8::MAX.into() {
             self.parser().error("Too many local variables in function.");
             return;
         }

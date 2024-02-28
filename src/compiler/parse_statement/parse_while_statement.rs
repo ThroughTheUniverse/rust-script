@@ -1,20 +1,22 @@
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
-
 use super::Compiler;
+use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 impl Compiler {
     pub fn parse_while_statement(&mut self) {
-        let loop_start = self.current_chunk().bytecodes.len();
-        self.consume(TokenKind::LeftParen, "Expect '(' after 'while'.");
-        self.parse_expression();
-        self.consume(TokenKind::RightParen, "Expect ')' after condition.");
+        use OpCode::*;
+        use TokenKind::*;
 
-        let exit_jump = self.emit_jump(OpCode::JumpIfFalse);
-        self.emit_one_byte(OpCode::Pop);
+        let loop_start = self.current_chunk().bytecodes.len();
+        self.consume(LeftParen, "Expect '(' after 'while'.");
+        self.parse_expression();
+        self.consume(RightParen, "Expect ')' after condition.");
+
+        let exit_jump = self.emit_jump(JumpIfFalse);
+        self.emit_one_byte(Pop);
         self.parse_statement();
         self.emit_loop(loop_start);
         self.patch_jump(exit_jump);
-        self.emit_one_byte(OpCode::Pop);
+        self.emit_one_byte(Pop);
     }
 
     pub fn emit_loop(&mut self, loop_start: usize) {

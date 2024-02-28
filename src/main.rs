@@ -4,8 +4,6 @@ use std::{
     io::{self, stdin, stdout, Write},
 };
 
-use chunk::{opcode::OpCode, Chunk};
-use scanner::Scanner;
 use vm::VirtualMachine;
 
 mod chunk;

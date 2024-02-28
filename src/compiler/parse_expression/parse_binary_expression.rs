@@ -21,7 +21,7 @@ impl Compiler {
             Minus => self.emit_one_byte(Subtract),
             Star => self.emit_one_byte(Multiply),
             Slash => self.emit_one_byte(Divide),
-            _ => todo!(),
+            _ => panic!("binary operator not found"),
         }
     }
 }

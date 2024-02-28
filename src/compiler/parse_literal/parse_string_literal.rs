@@ -1,6 +1,5 @@
-use crate::value::Value;
-
 use super::Compiler;
+use crate::value::Value;
 
 impl Compiler {
     pub fn parser_string_literal(&mut self, _can_assign: bool) {

@@ -1,13 +1,14 @@
-use crate::scanner::token::TokenKind;
-
 use super::Compiler;
+use crate::scanner::token::TokenKind;
 
 impl Compiler {
     pub fn parse_block_statement(&mut self) {
-        while !self.check(TokenKind::RightBrace) && !self.check(TokenKind::EOF) {
+        use TokenKind::*;
+
+        while !self.check(RightBrace) && !self.check(EOF) {
             self.parse_declaration();
         }
 
-        self.consume(TokenKind::RightBrace, "Expect '}' after block.");
+        self.consume(RightBrace, "Expect '}' after block.");
     }
 }

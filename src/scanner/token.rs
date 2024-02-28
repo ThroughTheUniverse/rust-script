@@ -33,7 +33,6 @@ pub enum TokenKind {
     Or,
     Print,
     Return,
-    Super,
     Self_,
     True,
     Let,

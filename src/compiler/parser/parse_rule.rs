@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
-use crate::scanner::token::TokenKind;
-
 use crate::compiler::Compiler;
+use crate::scanner::token::TokenKind;
+use std::collections::HashMap;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Precedence {
@@ -269,10 +267,6 @@ impl Rules {
             ),
             (
                 TokenKind::Return,
-                ParseRule::new(None, None, Precedence::None),
-            ),
-            (
-                TokenKind::Super,
                 ParseRule::new(None, None, Precedence::None),
             ),
             (

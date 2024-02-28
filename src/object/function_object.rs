@@ -1,15 +1,14 @@
-use std::{fmt::Display, rc::Rc};
-
 use crate::chunk::Chunk;
+use std::fmt::Display;
 
-pub struct Function {
+pub struct FunctionObject {
     pub arity: usize,
     pub chunk: Chunk,
     pub name: String,
     // pub upvalue_count: usize,
 }
 
-impl Function {
+impl FunctionObject {
     pub fn new() -> Self {
         Self {
             arity: 0,
@@ -20,7 +19,7 @@ impl Function {
     }
 }
 
-impl Display for Function {
+impl Display for FunctionObject {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.name.is_empty() {
             write!(f, "<script>")

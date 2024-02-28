@@ -1,4 +1,4 @@
-use super::r#struct::StructObject;
+use super::struct_object::StructObject;
 use crate::value::Value;
 use std::{cell::RefCell, collections::HashMap, fmt::Display, rc::Rc};
 

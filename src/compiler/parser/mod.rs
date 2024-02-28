@@ -1,6 +1,7 @@
+use crate::scanner::token::{Token, TokenKind};
 use std::cell::Cell;
 
-use crate::scanner::token::{Token, TokenKind};
+pub mod parse_rule;
 
 pub struct Parser {
     pub current: Token,
@@ -8,8 +9,6 @@ pub struct Parser {
     pub had_error: Cell<bool>,
     pub is_panic_mode: Cell<bool>,
 }
-
-pub mod parse_rule;
 
 impl Parser {
     pub fn new() -> Self {
@@ -38,6 +37,8 @@ impl Parser {
     }
 
     pub fn error_at(&self, token: &Token, message: &str) {
+        use TokenKind::*;
+
         if self.is_panic_mode.get() {
             return;
         }
@@ -46,9 +47,9 @@ impl Parser {
 
         eprint!("[line {}] Error", token.line_number);
 
-        if token.kind == TokenKind::EOF {
+        if token.kind == EOF {
             eprint!(" at end");
-        } else if token.kind == TokenKind::Error {
+        } else if token.kind == Error {
         } else {
             eprint!(" at '{}'", token.lexeme);
         }

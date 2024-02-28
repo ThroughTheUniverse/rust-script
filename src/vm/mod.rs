@@ -1,20 +1,19 @@
-use std::{borrow::BorrowMut, collections::HashMap, rc::Rc, result};
-
 use crate::{
     chunk::{opcode::OpCode, Chunk},
     compiler::{Compiler, FunctionKind, InterpretError},
     object::{
-        bound_method::BoundMethod,
-        function::{self, Function},
-        instance::InstanceObject,
-        native_function::{Clock, NativeFunction},
-        r#struct::StructObject,
+        bound_method_object::BoundMethodObject,
+        function_object::FunctionObject,
+        instance_object::InstanceObject,
+        native_function_object::{Clock, NativeFunctionObject},
+        struct_object::StructObject,
     },
     value::Value,
 };
+use std::{collections::HashMap, rc::Rc};
 
 struct CallFrame {
-    function: Rc<Function>,
+    function: Rc<FunctionObject>,
     ip: usize,
     base_slot: usize,
 }
@@ -232,7 +231,7 @@ impl VirtualMachine {
     fn bind_method(&mut self, structt: Rc<StructObject>, name: &str) -> bool {
         if let Some(method) = structt.methods.borrow().get(name) {
             let receiver = self.peek(0);
-            let bound = BoundMethod::new(receiver, method.clone());
+            let bound = BoundMethodObject::new(receiver, method.clone());
             self.stack.pop();
             self.stack.push(Value::BoundMethod(Rc::new(bound)));
             true
@@ -356,7 +355,7 @@ impl VirtualMachine {
             }
             _ => (),
         }
-        let _ = self.runtime_error("Can only call functions and classes.");
+        let _ = self.runtime_error("Can only call functions and structs.");
         false
     }
 
@@ -372,12 +371,12 @@ impl VirtualMachine {
         }
     }
 
-    fn define_native(&mut self, name: &str, function: Rc<dyn NativeFunction>) {
+    fn define_native(&mut self, name: &str, function: Rc<dyn NativeFunctionObject>) {
         self.globals
             .insert(name.to_string(), Value::NativeFunction(function.clone()));
     }
 
-    fn call(&mut self, function: Rc<Function>, arg_count: u8) -> bool {
+    fn call(&mut self, function: Rc<FunctionObject>, arg_count: u8) -> bool {
         if arg_count as usize != function.arity {
             let _ = self.runtime_error(&format!(
                 "Expected {} arguments but got {}.",

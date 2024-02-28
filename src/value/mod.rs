@@ -1,6 +1,7 @@
 use crate::object::{
-    bound_method::BoundMethod, closure::Closure, function::Function, instance::InstanceObject,
-    native_function::NativeFunction, r#struct::StructObject,
+    bound_method_object::BoundMethodObject, function_object::FunctionObject,
+    instance_object::InstanceObject, native_function_object::NativeFunctionObject,
+    struct_object::StructObject,
 };
 use std::{
     any::Any,
@@ -15,12 +16,11 @@ pub enum Value {
     Bool(bool),
     Number(f64),
     String(String),
-    Function(Rc<Function>),
-    NativeFunction(Rc<dyn NativeFunction>),
-    Closure(Rc<Closure>),
+    Function(Rc<FunctionObject>),
+    NativeFunction(Rc<dyn NativeFunctionObject>),
     Struct(Rc<StructObject>),
     Instance(Rc<InstanceObject>),
-    BoundMethod(Rc<BoundMethod>),
+    BoundMethod(Rc<BoundMethodObject>),
 }
 
 impl Display for Value {
@@ -33,7 +33,6 @@ impl Display for Value {
             String(string) => write!(f, "{}", string),
             Function(function) => write!(f, "{}", function),
             NativeFunction(_) => write!(f, "<native fn>"),
-            Closure(closure) => write!(f, "{}", closure),
             Struct(r#struct) => write!(f, "{}", r#struct),
             Instance(instance) => write!(f, "{}", instance),
             BoundMethod(bound_method) => write!(f, "{}", bound_method),
@@ -51,7 +50,6 @@ impl Clone for Value {
             String(s) => String(s.clone()),
             Function(f) => Function(Rc::clone(f)),
             NativeFunction(n) => NativeFunction(Rc::clone(n)),
-            Closure(c) => Closure(Rc::clone(c)),
             Struct(c) => Struct(Rc::clone(c)),
             Instance(i) => Instance(Rc::clone(i)),
             BoundMethod(b) => BoundMethod(Rc::clone(b)),
@@ -157,19 +155,6 @@ impl Value {
         }
     }
 
-    pub fn is_none(&self) -> bool {
-        match self {
-            Self::None => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_bool(&self) -> bool {
-        match self {
-            Self::Bool(_) => true,
-            _ => false,
-        }
-    }
     pub fn is_string(&self) -> bool {
         match self {
             Self::String(_) => true,

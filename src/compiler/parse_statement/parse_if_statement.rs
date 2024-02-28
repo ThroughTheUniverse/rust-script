@@ -1,19 +1,21 @@
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
-
 use super::Compiler;
+use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 impl Compiler {
     pub fn parse_if_statement(&mut self) {
-        self.consume(TokenKind::LeftParen, "Expect '(' after 'if'.");
+        use OpCode::*;
+        use TokenKind::*;
+
+        self.consume(LeftParen, "Expect '(' after 'if'.");
         self.parse_expression();
-        self.consume(TokenKind::RightParen, "Expect ')' after condition.");
-        let then_jump = self.emit_jump(OpCode::JumpIfFalse);
-        self.emit_one_byte(OpCode::Pop);
+        self.consume(RightParen, "Expect ')' after condition.");
+        let then_jump = self.emit_jump(JumpIfFalse);
+        self.emit_one_byte(Pop);
         self.parse_statement();
-        let else_jump = self.emit_jump(OpCode::Jump);
+        let else_jump = self.emit_jump(Jump);
         self.patch_jump(then_jump);
-        self.emit_one_byte(OpCode::Pop);
-        if self.matches(TokenKind::Else) {
+        self.emit_one_byte(Pop);
+        if self.matches(Else) {
             self.parse_statement();
         }
         self.patch_jump(else_jump);

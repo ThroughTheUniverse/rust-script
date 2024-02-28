@@ -207,7 +207,6 @@ impl Scanner {
                     match self.source.get(self.start + 1).unwrap() {
                         'e' => self.check_keyword(2, 2, "lf", Self_),
                         't' => self.check_keyword(2, 4, "ruct", Struct),
-                        'u' => self.check_keyword(2, 3, "per", Super),
                         _ => Identifier,
                     }
                 } else {

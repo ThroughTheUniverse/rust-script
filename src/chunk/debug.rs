@@ -1,6 +1,5 @@
-use std::ops::Shl;
-
 use crate::chunk::{opcode::OpCode, Chunk};
+use std::ops::Shl;
 
 enum JumpDirection {
     Forward,
@@ -45,15 +44,9 @@ impl Chunk {
             GetGlobal => self.constant_instruction(GetGlobal.to_string().as_str(), offset),
             SetGlobal => self.constant_instruction(SetGlobal.to_string().as_str(), offset),
             DefineGlobal => self.constant_instruction(DefineGlobal.to_string().as_str(), offset),
-            // upvalue
-            GetUpvalue => self.byte_instruction(GetUpvalue.to_string().as_str(), offset),
-            SetUpvalue => self.byte_instruction(SetUpvalue.to_string().as_str(), offset),
-            CloseUpvalue => self.simple_instruction(CloseUpvalue.to_string().as_str(), offset),
             // property
             GetProperty => self.constant_instruction(GetProperty.to_string().as_str(), offset),
             SetProperty => self.constant_instruction(SetProperty.to_string().as_str(), offset),
-            // super
-            GetSuper => self.constant_instruction(GetSuper.to_string().as_str(), offset),
             // comparison
             Equal => self.simple_instruction(Equal.to_string().as_str(), offset),
             Greater => self.simple_instruction(Greater.to_string().as_str(), offset),
@@ -76,39 +69,11 @@ impl Chunk {
             Loop => self.jump_instruction(Loop.to_string().as_str(), Backward, offset),
             // invoke
             Invoke => self.invoke_instruction(Invoke.to_string().as_str(), offset),
-            SuperInvoke => self.invoke_instruction(SuperInvoke.to_string().as_str(), offset),
-            // closure
-            // Closure => {
-            //     let mut i = offset + 1;
-            //     let constant = self.bytecodes[i];
-            //     i += 1;
-            //     print!("{:-16} {constant:4} ", Closure.to_string());
-            //     self.constant_pool.print_nth(constant as usize);
-            //     println!();
-            //     if let Function(function) = self.constant_pool.get(constant as usize) {
-            //         for _ in 0..function.upvalue_count {
-            //             let is_local: &str = if self.bytecodes[i] == 0 {
-            //                 "upvalue"
-            //             } else {
-            //                 "local"
-            //             };
-            //             i += 1;
-            //             let index = self.bytecodes[i];
-            //             i += 1;
-            //             println!("{:04}      |                     {is_local} {index}", i - 2);
-            //         }
-            //     } else {
-            //         panic!("No function at position {constant}");
-            //     }
-            //     i
-            // }
-            // function
             Call => self.byte_instruction(Call.to_string().as_str(), offset),
             Return => self.simple_instruction(Return.to_string().as_str(), offset),
             // struct
             Struct => self.constant_instruction(Struct.to_string().as_str(), offset),
             Method => self.constant_instruction(Method.to_string().as_str(), offset),
-            Inherit => self.simple_instruction(Inherit.to_string().as_str(), offset),
             _ => panic!("Unknown Opcode"),
         }
     }

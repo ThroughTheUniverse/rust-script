@@ -1,6 +1,5 @@
-use crate::scanner::token::TokenKind;
-
 use super::Compiler;
+use crate::scanner::token::TokenKind;
 
 mod parse_block_statement;
 mod parse_expression_statement;
@@ -12,17 +11,19 @@ mod parse_while_statement;
 
 impl Compiler {
     pub fn parse_statement(&mut self) {
-        if self.matches(TokenKind::Print) {
+        use TokenKind::*;
+
+        if self.matches(Print) {
             self.parse_print_statement();
-        } else if self.matches(TokenKind::For) {
+        } else if self.matches(For) {
             self.parse_for_statement();
-        } else if self.matches(TokenKind::If) {
+        } else if self.matches(If) {
             self.parse_if_statement();
-        } else if self.matches(TokenKind::Return) {
+        } else if self.matches(Return) {
             self.parse_return_statement();
-        } else if self.matches(TokenKind::While) {
+        } else if self.matches(While) {
             self.parse_while_statement();
-        } else if self.matches(TokenKind::LeftBrace) {
+        } else if self.matches(LeftBrace) {
             self.begin_scope();
             self.parse_block_statement();
             self.end_scope();

@@ -1,6 +1,5 @@
-use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
-
 use super::Compiler;
+use crate::{chunk::opcode::OpCode, scanner::token::TokenKind};
 
 impl Compiler {
     pub fn parse_expression_statement(&mut self) {

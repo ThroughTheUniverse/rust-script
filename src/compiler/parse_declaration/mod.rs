@@ -1,6 +1,5 @@
-use crate::scanner::token::TokenKind;
-
 use super::Compiler;
+use crate::scanner::token::TokenKind;
 
 mod parse_fn_declaration;
 mod parse_let_declaration;
@@ -17,6 +16,7 @@ impl Compiler {
         } else {
             self.parse_statement();
         }
+
         if self.parser().is_panic_mode.get() {
             self.synchronize();
         }
